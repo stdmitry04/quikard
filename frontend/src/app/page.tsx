@@ -1,86 +1,128 @@
 'use client'
 
-import React, { useState, useRef, DragEvent, ChangeEvent } from 'react'
-import CardPreview from '@/components/CardPreview'
-import FormSection from '@/components/FormSection'
-import Header from '@/components/Header'
-import Features from '@/components/Features'
-import '@/styles/globals.css'
-import { CardData } from '@/types/'
+import React, { useState } from 'react';
+import { SocialLink } from '@/types';
+import { useFormData } from '@/hooks/useFormData';
+import { LINK_TYPES } from '@/constants/linkTypes';
 
-export default function Page() {
-  const [cardData, setCardData] = useState<CardData>({
-    name: '',
-    title: '',
-    company: '',
-    email: '',
-    phone: '',
-    linkedin: '',
-    website: '',
-    avatar: null,
-    style: 'minimal'
-  })
+// component imports
+import { Header } from '@/components/layout/Header';
+import { FormContainer } from '@/components/form/FormContainer';
+import { ProfilePictureUpload } from '@/components/form/ProfilePictureUpload';
+import { PersonalInfoForm } from '@/components/form/PersonalInfoForm';
+import { LinksManager } from '@/components/links/LinksManager';
+import { BusinessCardPreview } from '@/components/preview/BusinessCardPreview';
+import { GradientButton } from '@/components/ui/GradientButton';
 
-  const [isGenerating, setIsGenerating] = useState(false)
+const QuiKard: React.FC = () => {
+  const { formData, handleInputChange, handleImageUpload } = useFormData();
+  const [links, setLinks] = useState<SocialLink[]>([]);
+  const [isCreating, setIsCreating] = useState<boolean>(false);
 
-  const updateField = (field: keyof CardData, value: string) => {
-    setCardData(prev => ({ ...prev, [field]: value }))
-  }
+  const handleCreateCard = async (): Promise<void> => {
+    setIsCreating(true);
 
-  const handleAvatarUpload = (file: File) => {
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setCardData(prev => ({ ...prev, avatar: e.target?.result as string }))
-      }
-      reader.readAsDataURL(file)
+    // simulate api call or processing time
+    try {
+      // here you would typically:
+      // 1. validate all form data
+      // 2. generate QR code
+      // 3. save to database
+      // 4. create shareable link
+
+      console.log('creating card with:', {
+        formData,
+        links,
+        timestamp: new Date().toISOString()
+      });
+
+      // simulate processing time
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // success feedback could go here
+      alert('Business card created successfully!');
+
+    } catch (error) {
+      console.error('Error creating business card:', error);
+      alert('Error creating business card. Please try again.');
+    } finally {
+      setIsCreating(false);
     }
-  }
+  };
 
-  const generateCard = async () => {
-    setIsGenerating(true)
-    // Simulate generation process
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setIsGenerating(false)
-    // In a real app, this would trigger download or further processing
-    alert('Card generated! In a real app, download options would appear here.')
-  }
+  const isFormValid = (): boolean => {
+    return !!(
+        formData.firstName.trim() ||
+        formData.lastName.trim() ||
+        formData.email.trim() ||
+        formData.phone.trim()
+    );
+  };
 
   return (
-      <div className="min-h-screen bg-dark relative overflow-x-hidden">
-        {/* Background orbs */}
-        <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[100px] -top-48 -right-48" />
-          <div className="absolute w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[100px] -bottom-48 -left-48" />
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-black text-gray-100 relative">
+        {/* background ambient lighting elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-20 w-96 h-96 bg-gradient-to-br from-blue-600/5 to-purple-700/5 rounded-full blur-3xl" />
+          <div className="absolute top-40 right-20 w-80 h-80 bg-gradient-to-br from-purple-600/5 to-pink-600/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-20 left-1/3 w-72 h-72 bg-gradient-to-br from-cyan-600/5 to-blue-700/5 rounded-full blur-3xl" />
         </div>
 
-        {/* Main Content */}
-        <div className="relative z-10 min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
-          <div className="w-full max-w-7xl mx-auto">
-            <Header />
+        <Header />
 
-            {/* Main Grid */}
-            <div className="grid lg:grid-cols-1 gap-8 items-start">
-              <FormSection
-                  cardData={cardData}
-                  updateField={updateField}
-                  handleAvatarUpload={handleAvatarUpload}
-                  generateCard={generateCard}
-                  isGenerating={isGenerating}
-              />
+        <main className="max-w-6xl mx-auto px-6 py-16 relative">
+          <div className="grid lg:grid-cols-2 gap-16">
 
-              <div className="space-y-8">
-                <CardPreview cardData={cardData} />
-                <Features />
+            {/* form section */}
+            <section aria-label="Business card information form">
+              <div className="space-y-10">
+                <FormContainer>
+                  <ProfilePictureUpload
+                      profilePicture={formData.profilePicture}
+                      onImageUpload={handleImageUpload}
+                  />
+
+                  <PersonalInfoForm
+                      formData={formData}
+                      onInputChange={handleInputChange}
+                  />
+
+                  <LinksManager
+                      links={links}
+                      onLinksChange={setLinks}
+                      linkTypes={LINK_TYPES}
+                  />
+                </FormContainer>
+
+                <GradientButton
+                    onClick={handleCreateCard}
+                    className="w-full"
+                >
+                  {isCreating ? 'Creating Your Card...' : 'Create My Digital Business Card'}
+                </GradientButton>
+
+                {!isFormValid() && (
+                    <p className="text-center text-gray-400 text-sm">
+                      Fill in at least one field to create your business card
+                    </p>
+                )}
               </div>
-            </div>
+            </section>
 
-            {/* Footer */}
-            <footer className="text-center mt-12 text-sm text-gray-500">
-              <p>2024 QuickCard. Create beautiful business cards instantly.</p>
-            </footer>
+            {/* preview section */}
+            <aside
+                className="lg:sticky lg:top-8"
+                aria-label="Business card preview"
+            >
+              <BusinessCardPreview
+                  formData={formData}
+                  links={links}
+              />
+            </aside>
           </div>
-        </div>
+        </main>
       </div>
-  )
-}
+  );
+};
+
+export default QuiKard;
