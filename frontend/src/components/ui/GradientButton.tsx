@@ -74,12 +74,12 @@ export const GradientButton: React.FC<GlassButtonProps> = ({
                             0 12px 48px rgba(0, 0, 0, 0.15),
                             0 8px 24px rgba(0, 0, 0, 0.1),
                                 /* stronger inner highlights */
-                            inset 0 1px 3px rgba(255, 255, 255, 0.3),
+                            inset 0 1px 3px rgba(255, 255, 255, 0.15),
                             inset 0 -1px 2px rgba(0, 0, 0, 0.08),
                                 /* enhanced colored glow */
-                            inset 0 0 30px rgba(96, 165, 250, 0.08),
-                            inset 0 0 60px rgba(196, 181, 253, 0.05),
-                            inset 0 0 80px rgba(244, 114, 182, 0.03);
+                            inset 0 0 30px rgba(96, 165, 250, 0.02),
+                            inset 0 0 60px rgba(196, 181, 253, 0.025),
+                            inset 0 0 80px rgba(244, 114, 182, 0.01);
                     transform: translateY(-1px);
                 }
 
