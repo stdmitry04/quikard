@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { Phone, Mail, Download, Share2, ArrowLeft } from 'lucide-react';
 import { cardApiService } from '@/api/cardService';
 import { CardData } from '@/types';
+import { LINK_TYPES } from '@/constants/linkTypes';
+import { Link } from 'lucide-react'; // fallback icon
 
 
 const CardDisplayPage: React.FC = () => {
@@ -211,20 +213,29 @@ const CardDisplayPage: React.FC = () => {
                             <div className="mb-8">
                                 <h2 className="text-lg font-light text-gray-300 mb-4">connect with me</h2>
                                 <div className="flex flex-wrap justify-center gap-3">
-                                    {cardData.links.map((link) => (
-                                        <a
-                                            key={link.id}
+                                    {cardData.links.map((link, index) => {
+                                        // find the matching link type from your constants
+                                        const linkTypeData = LINK_TYPES.find(lt => lt.value === link.type) || {
+                                            icon: Link, // fallback icon
+                                            color: 'text-gray-400', // fallback color
+                                            label: link.label || 'Custom'
+                                        };
+
+                                        return (
+                                            <a
+                                            key={`${link.type}-${index}`} // type + index as unique key
                                             href={link.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="flex items-center space-x-2 backdrop-blur-sm bg-black/30 rounded-2xl px-4 py-3 border border-white/10 shadow-lg hover:border-white/20 transition-all duration-300 hover:scale-105 group"
-                                        >
-                                            <link.icon className={`w-5 h-5 ${link.color} group-hover:scale-110 transition-transform`} />
-                                            <span className="text-sm text-gray-200 font-medium group-hover:text-white">
-                        {link.label}
-                      </span>
-                                        </a>
-                                    ))}
+                                            >
+                                                <linkTypeData.icon className={`w-5 h-5 ${linkTypeData.color} group-hover:scale-110 transition-transform`} />
+                                                <span className="text-sm text-gray-200 font-medium group-hover:text-white">
+                                                    {link.label || linkTypeData.label}
+                                                </span>
+                                            </a>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}

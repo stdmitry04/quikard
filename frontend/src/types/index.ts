@@ -13,12 +13,16 @@ export interface FormData {
 export interface CardData {
     firstName: string;
     lastName: string;
-    email: string;
-    phone: string;
-    profilePicture?: string;
-    links: SocialLink[];
+    email: string | null;
+    phone: string | null;
+    profilePicture: string | null;
+    links: Array<{
+        type: string;
+        url: string;
+        label: string;
+    }>;
     createdAt: string;
-    qrCodeUrl?: string;
+    qrCodeUrl: string | null;
 }
 
 export interface LinkType {

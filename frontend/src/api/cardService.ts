@@ -36,13 +36,13 @@ class CardApiService {
 
     constructor() {
         // using environment variable or default to localhost for development
-        this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+        this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
     }
 
     async createCard(cardData: CreateCardRequest): Promise<CreateCardResponse> {
         try {
             // making the actual api call to create the card
-            const response = await fetch(`${this.baseUrl}/cards`, {
+            const response = await fetch(`${this.baseUrl}/api/v1/cards`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
