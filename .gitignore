@@ -1,11 +1,29 @@
-/tmp
-/out-tsc
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+env/
 
-/node_modules
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-/.pnp
-.pnp.js
+# Database
+*.db
+*.sqlite3
 
-.vscode/*
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env*
+
+# Uploads
+uploads/
+
+# Logs
+*.log

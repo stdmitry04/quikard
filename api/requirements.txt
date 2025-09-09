@@ -1,0 +1,14 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+sqlalchemy==2.0.23
+pydantic[email]==2.5.0
+python-multipart==0.0.6
+qrcode[pil]==7.4.2
+pillow==10.1.0
+python-dotenv==1.0.0
+
+# for postgresql
+# psycopg2-binary==2.9.9
+
+# for mysql
+# pymysql==1.1.0
