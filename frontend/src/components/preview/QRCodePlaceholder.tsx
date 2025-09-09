@@ -1,6 +1,13 @@
 import React from 'react';
+import {QRCodeSVG } from 'qrcode.react';
 
-export const QRCodePlaceholder: React.FC = () => {
+type QRCodePlaceholderProps = {
+    seed?: string;
+}
+
+export const QRCodePlaceholder: React.FC<QRCodePlaceholderProps> = ({
+                                                                        seed = 'my-seed',
+                                                                    }) => {
     return (
         <div className="mt-8 text-center relative z-10">
             <p className="text-sm text-gray-400 mb-4 font-light">
@@ -11,20 +18,7 @@ export const QRCodePlaceholder: React.FC = () => {
                 role="img"
                 aria-label="QR code placeholder - will be generated with actual business card data"
             >
-                <div className="w-24 h-24 backdrop-blur-sm bg-white/10 rounded-2xl grid grid-cols-8 gap-px p-2 shadow-inner">
-                    {/* generate qr code pattern with consistent seed for demo */}
-                    {Array.from({ length: 64 }).map((_, i) => {
-                        // use index-based pattern for consistent appearance
-                        const isFilledCell = (i + Math.floor(i / 8)) % 3 !== 0;
-                        return (
-                            <div
-                                key={i}
-                                className={`${isFilledCell ? 'bg-white/60' : 'bg-white/10'} rounded-sm`}
-                                aria-hidden="true"
-                            />
-                        );
-                    })}
-                </div>
+                <QRCodeSVG value="" size={120} bgColor="#0f0f15" fgColor="#e5e7eb" />;
             </div>
         </div>
     );
