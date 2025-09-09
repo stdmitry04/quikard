@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import { SocialLink } from '@/types';
 import { useFormData } from '@/hooks/useFormData';
 import { LINK_TYPES } from '@/constants/linkTypes';
+import { cardApiService, CreateCardRequest } from '@/api/cardService';
+import {useRouter} from "next/navigation";
+
 
 // component imports
 import { Header } from '@/components/layout/Header';
@@ -15,36 +18,46 @@ import { BusinessCardPreview } from '@/components/preview/BusinessCardPreview';
 import { GradientButton } from '@/components/ui/GradientButton';
 
 const QuiKard: React.FC = () => {
+  const router = useRouter();
   const { formData, handleInputChange, handleImageUpload } = useFormData();
   const [links, setLinks] = useState<SocialLink[]>([]);
   const [isCreating, setIsCreating] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
   const handleCreateCard = async (): Promise<void> => {
     setIsCreating(true);
+    setError('');
 
-    // simulate api call or processing time
     try {
-      // here you would typically:
-      // 1. validate all form data
-      // 2. generate QR code
-      // 3. save to database
-      // 4. create shareable link
+      // validate that we have at least some data to create a card
+      if (!isFormValid()) {
+        throw new Error('please fill in at least one field to create your card');
+      }
 
-      console.log('creating card with:', {
-        formData,
-        links,
-        timestamp: new Date().toISOString()
-      });
+      // prepare the data for the api call
+      const cardData: CreateCardRequest = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        profilePicture: formData.profilePicture || undefined,
+        links: links.map(link => ({
+          type: link.type,
+          url: link.url,
+          label: link.label
+        }))
+      };
 
-      // simulate processing time
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // call the fastapi backend to create the card
+      const response = await cardApiService.createCard(cardData);
 
-      // success feedback could go here
-      alert('Business card created successfully!');
+      // redirect to the newly created card page
+      router.push(`/card/${response.slug}`);
 
     } catch (error) {
-      console.error('Error creating business card:', error);
-      alert('Error creating business card. Please try again.');
+      console.error('error creating business card:', error);
+      const errorMessage = error instanceof Error ? error.message : 'failed to create card - please try again';
+      setError(errorMessage);
     } finally {
       setIsCreating(false);
     }

@@ -1,0 +1,274 @@
+'use client'
+
+import React, { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { Phone, Mail, Download, Share2, ArrowLeft } from 'lucide-react';
+import { cardApiService } from '@/api/cardService';
+import { CardData } from '@/types';
+
+
+const CardDisplayPage: React.FC = () => {
+    const params = useParams();
+    const router = useRouter();
+    const [cardData, setCardData] = useState<CardData | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string>('');
+
+    const slug = params?.slug as string;
+
+    useEffect(() => {
+        const fetchCard = async () => {
+            if (!slug) return;
+
+            try {
+                setLoading(true);
+                const data = await cardApiService.getCard(slug);
+                setCardData(data);
+            } catch (error) {
+                console.error('error fetching card:', error);
+                setError(error instanceof Error ? error.message : 'failed to load business card');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCard();
+    }, [slug]);
+
+    const handleShare = async (): Promise<void> => {
+        const shareUrl = window.location.href;
+
+        if (navigator.share) {
+            // use native sharing if available
+            try {
+                await navigator.share({
+                    title: `${cardData?.firstName} ${cardData?.lastName} - digital business card`,
+                    text: 'check out my digital business card',
+                    url: shareUrl,
+                });
+            } catch (error) {
+                console.log('sharing cancelled or failed');
+            }
+        } else {
+            // fallback to clipboard
+            try {
+                await navigator.clipboard.writeText(shareUrl);
+                alert('link copied to clipboard!');
+            } catch (error) {
+                console.error('failed to copy link');
+            }
+        }
+    };
+
+    const handleDownloadVCard = (): void => {
+        if (!cardData) return;
+
+        // create vcard content
+        const vCardContent = [
+            'BEGIN:VCARD',
+            'VERSION:3.0',
+            `FN:${cardData.firstName} ${cardData.lastName}`,
+            `N:${cardData.lastName};${cardData.firstName};;;`,
+            cardData.email ? `EMAIL:${cardData.email}` : '',
+            cardData.phone ? `TEL:${cardData.phone}` : '',
+            'END:VCARD'
+        ].filter(Boolean).join('\n');
+
+        // download the vcard file
+        const blob = new Blob([vCardContent], { type: 'text/vcard' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${cardData.firstName}_${cardData.lastName}_contact.vcf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-black flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+                    <p className="text-gray-300">loading your business card...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error || !cardData) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-black flex items-center justify-center">
+                <div className="text-center backdrop-blur-xl bg-black/20 rounded-3xl p-8 border border-white/5">
+                    <h1 className="text-2xl font-light text-gray-100 mb-4">card not found</h1>
+                    <p className="text-gray-400 mb-6">{error || 'this business card does not exist or has been removed'}</p>
+                    <button
+                        onClick={() => router.push('/')}
+                        className="backdrop-blur-sm bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-6 py-3 rounded-2xl transition-all duration-300 border border-blue-500/30"
+                    >
+                        create your own card
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    const displayName = `${cardData.firstName} ${cardData.lastName}`.trim() || 'anonymous';
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-black text-gray-100 relative">
+            {/* background ambient lighting */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-20 left-20 w-96 h-96 bg-gradient-to-br from-blue-600/5 to-purple-700/5 rounded-full blur-3xl" />
+                <div className="absolute top-40 right-20 w-80 h-80 bg-gradient-to-br from-purple-600/5 to-pink-600/5 rounded-full blur-3xl" />
+                <div className="absolute bottom-20 left-1/3 w-72 h-72 bg-gradient-to-br from-cyan-600/5 to-blue-700/5 rounded-full blur-3xl" />
+            </div>
+
+            {/* header with navigation */}
+            <header className="relative backdrop-blur-xl bg-black/40 border-b border-white/5">
+                <div className="max-w-4xl mx-auto px-6 py-6 flex items-center justify-between">
+                    <button
+                        onClick={() => router.push('/')}
+                        className="flex items-center space-x-2 text-gray-400 hover:text-gray-200 transition-colors"
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                        <span>create your own</span>
+                    </button>
+
+                    <div className="flex items-center space-x-4">
+                        <button
+                            onClick={handleShare}
+                            className="flex items-center space-x-2 backdrop-blur-sm bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 px-4 py-2 rounded-xl transition-all duration-300 border border-purple-500/30"
+                        >
+                            <Share2 className="w-4 h-4" />
+                            <span>share</span>
+                        </button>
+
+                        <button
+                            onClick={handleDownloadVCard}
+                            className="flex items-center space-x-2 backdrop-blur-sm bg-green-500/20 hover:bg-green-500/30 text-green-300 px-4 py-2 rounded-xl transition-all duration-300 border border-green-500/30"
+                        >
+                            <Download className="w-4 h-4" />
+                            <span>save contact</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            {/* main card display */}
+            <main className="max-w-2xl mx-auto px-6 py-16 relative">
+                <div className="backdrop-blur-xl bg-black/20 rounded-3xl p-12 border border-white/5 shadow-2xl relative overflow-hidden">
+                    {/* gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+
+                    <div className="text-center relative z-10">
+                        {/* profile picture */}
+                        <div className="mb-8">
+                            {cardData.profilePicture ? (
+                                <img
+                                    src={cardData.profilePicture}
+                                    alt={`profile picture of ${displayName}`}
+                                    className="w-36 h-36 rounded-full mx-auto object-cover border border-white/20 shadow-2xl"
+                                />
+                            ) : (
+                                <div className="w-36 h-36 rounded-full mx-auto backdrop-blur-sm bg-black/40 border border-dashed border-white/20 flex items-center justify-center shadow-xl">
+                                    <span className="text-gray-500 text-sm">no photo</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* name */}
+                        <h1 className="text-4xl font-light text-gray-100 mb-8 tracking-wide">
+                            {displayName}
+                        </h1>
+
+                        {/* contact information */}
+                        <div className="space-y-4 mb-8">
+                            {cardData.phone && (
+                                <a
+                                    href={`tel:${cardData.phone}`}
+                                    className="flex items-center justify-center space-x-3 text-gray-200 backdrop-blur-sm bg-black/20 rounded-2xl px-6 py-4 border border-white/10 hover:border-green-400/30 hover:bg-green-500/5 transition-all duration-300 group"
+                                >
+                                    <Phone className="w-5 h-5 text-green-400 group-hover:text-green-300" />
+                                    <span className="font-medium group-hover:text-green-300">{cardData.phone}</span>
+                                </a>
+                            )}
+
+                            {cardData.email && (
+                                <a
+                                    href={`mailto:${cardData.email}`}
+                                    className="flex items-center justify-center space-x-3 text-gray-200 backdrop-blur-sm bg-black/20 rounded-2xl px-6 py-4 border border-white/10 hover:border-blue-400/30 hover:bg-blue-500/5 transition-all duration-300 group"
+                                >
+                                    <Mail className="w-5 h-5 text-blue-400 group-hover:text-blue-300" />
+                                    <span className="font-medium group-hover:text-blue-300">{cardData.email}</span>
+                                </a>
+                            )}
+                        </div>
+
+                        {/* social links */}
+                        {cardData.links && cardData.links.length > 0 && (
+                            <div className="mb-8">
+                                <h2 className="text-lg font-light text-gray-300 mb-4">connect with me</h2>
+                                <div className="flex flex-wrap justify-center gap-3">
+                                    {cardData.links.map((link) => (
+                                        <a
+                                            key={link.id}
+                                            href={link.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center space-x-2 backdrop-blur-sm bg-black/30 rounded-2xl px-4 py-3 border border-white/10 shadow-lg hover:border-white/20 transition-all duration-300 hover:scale-105 group"
+                                        >
+                                            <link.icon className={`w-5 h-5 ${link.color} group-hover:scale-110 transition-transform`} />
+                                            <span className="text-sm text-gray-200 font-medium group-hover:text-white">
+                        {link.label}
+                      </span>
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* qr code */}
+                        {cardData.qrCodeUrl ? (
+                            <div className="mt-8">
+                                <p className="text-sm text-gray-400 mb-4 font-light">
+                                    scan to save contact
+                                </p>
+                                <img
+                                    src={cardData.qrCodeUrl}
+                                    alt="QR code for contact information"
+                                    className="w-32 h-32 mx-auto rounded-2xl border border-white/10 shadow-lg"
+                                />
+                            </div>
+                        ) : (
+                            <div className="mt-8">
+                                <p className="text-sm text-gray-400 mb-4 font-light">
+                                    scan to save contact
+                                </p>
+                                <div className="w-32 h-32 mx-auto backdrop-blur-sm bg-black/30 rounded-2xl border border-dashed border-white/20 flex items-center justify-center">
+                                    <span className="text-xs text-gray-500">qr code</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* powered by footer */}
+                <div className="text-center mt-8">
+                    <p className="text-gray-500 text-sm">
+                        powered by{' '}
+                        <button
+                            onClick={() => router.push('/')}
+                            className="text-blue-400 hover:text-blue-300 transition-colors"
+                        >
+                            quikard
+                        </button>
+                    </p>
+                </div>
+            </main>
+        </div>
+    );
+};
+
+export default CardDisplayPage;

@@ -10,6 +10,17 @@ export interface FormData {
     profilePicture: string | null;
 }
 
+export interface CardData {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    profilePicture?: string;
+    links: SocialLink[];
+    createdAt: string;
+    qrCodeUrl?: string;
+}
+
 export interface LinkType {
     value: string;
     label: string;
