@@ -40,9 +40,7 @@ def create_badge_pass(card_id: int, card_slug: str, card_url: str, user_name: st
 		"pass": {
 			"id": f"quikard-{card_slug}",  # unique identifier per user/pass
 			"attributes": {
-				"qrCodeValue": card_url,
-				"cardUrl": card_url,
-				"holderName": user_name
+				"link": card_url
 			}
 		}
 	}
@@ -145,29 +143,25 @@ async def create_digital_pass(
 			user_name=user_name
 		)
 
-		# Get the download URL from the pass template
-		download_url = get_pass_download_url()
-
-		# Extract relevant information from Badge response
-		pass_data = badge_response.get("pass", {})
-		pass_id = pass_data.get("id", f"quikard-{card.slug}")
-
-		# Badge typically returns platform-specific URLs
-		# Check the actual response structure from your Badge API
-		apple_wallet_url = pass_data.get("appleWalletUrl") or (
-			f"https://api.trybadge.com/passes/apple/{pass_id}" if download_url else None
-		)
-		google_pay_url = pass_data.get("googlePayUrl") or (
-			f"https://api.trybadge.com/passes/google/{pass_id}" if download_url else None
-		)
+		download_url = badge_response.get('downloadUrl', None)
+		pass_id = badge_response.get('id', None)
+		#
+		# # Badge typically returns platform-specific URLs
+		# # Check the actual response structure from your Badge API
+		# apple_wallet_url = pass_data.get("appleWalletUrl") or (
+		# 	f"https://api.trybadge.com/passes/apple/{pass_id}" if download_url else None
+		# )
+		# google_pay_url = pass_data.get("googlePayUrl") or (
+		# 	f"https://api.trybadge.com/passes/google/{pass_id}" if download_url else None
+		# )
 
 		return CreatePassResponse(
 			success=True,
 			passId=pass_id,
 			cardUrl=card_url,
-			appleWalletUrl=apple_wallet_url,
-			googlePayUrl=google_pay_url,
-			passUrl=download_url or pass_data.get("passUrl"),
+			# appleWalletUrl=apple_wallet_url,
+			# googlePayUrl=google_pay_url,
+			passUrl=download_url,
 			downloadUrl=download_url,
 			message=f"Digital pass created successfully for {user_name}"
 		)

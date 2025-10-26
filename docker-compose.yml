@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: quikard-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/app
+      - ./api/uploads:/app/uploads
+      - ./api/quikard.db:/app/quikard.db
+    env_file:
+      - ./api/.env
+    environment:
+      - BASE_URL=http://localhost:3000
+    networks:
+      - quikard-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: quikard-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - ./frontend/.env
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - api
+    networks:
+      - quikard-network
+    restart: unless-stopped
+
+networks:
+  quikard-network:
+    driver: bridge

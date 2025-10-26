@@ -40,29 +40,29 @@ export const AddLinkForm: React.FC<AddLinkFormProps> = ({
         const linkTypeData = getSelectedLinkType();
         if (!linkTypeData) return;
 
-        let inputValue: string;
+        let displayUrl: string;
 
-        // If this link type has a URL template, validate and send username only
+        // If this link type has a URL template, build the full URL for display
         if (linkTypeData.urlTemplate) {
             if (!validateUsername(trimmedInput)) {
                 setIsInputValid(false);
                 return;
             }
-            // Send only the username - backend will build the full URL
-            inputValue = trimmedInput;
+            // Build the full URL for frontend display
+            displayUrl = buildUrlFromTemplate(linkTypeData.urlTemplate, trimmedInput);
         } else {
             // For custom links, validate as full URL
             if (!validateUrl(trimmedInput)) {
                 setIsInputValid(false);
                 return;
             }
-            inputValue = trimmedInput;
+            displayUrl = trimmedInput;
         }
 
         onAdd({
             id: Date.now(),
             type: newLinkType,
-            url: inputValue, // Send username for social links, full URL for custom
+            url: displayUrl, // Full URL for display in preview and links
             ...linkTypeData
         });
         setNewLinkInput('');

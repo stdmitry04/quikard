@@ -1,4 +1,5 @@
 # routes/cards.py
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -15,6 +16,8 @@ from models import BusinessCard
 from schemas import CreateCardRequest, CreateCardResponse, CardDisplay, SocialLink
 from middleware.rate_limit import check_rate_limit, get_client_ip, build_full_url
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/api/v1/cards", tags=["cards"])
 
 # configuration
@@ -27,11 +30,18 @@ BASE_URL = os.getenv("BASE_URL", "http://localhost:3000")
 os.makedirs(f"{UPLOAD_DIR}/{PROFILE_PICS_DIR}", exist_ok=True)
 os.makedirs(f"{UPLOAD_DIR}/{QR_CODE_DIR}", exist_ok=True)
 
+
 def generate_slug(first_name: str, last_name: str) -> str:
     """generate a unique slug for the business card"""
     # clean and combine names
-    clean_first = re.sub(r'[^a-zA-Z0-9]', '', first_name.lower()) if first_name else ""
-    clean_last = re.sub(r'[^a-zA-Z0-9]', '', last_name.lower()) if last_name else ""
+    clean_first = re.sub(
+        r'[^a-zA-Z0-9]',
+        '',
+        first_name.lower()) if first_name else ""
+    clean_last = re.sub(
+        r'[^a-zA-Z0-9]',
+        '',
+        last_name.lower()) if last_name else ""
 
     # create base slug
     if clean_first and clean_last:
@@ -47,11 +57,13 @@ def generate_slug(first_name: str, last_name: str) -> str:
     random_suffix = secrets.token_hex(4)
     return f"{base_slug}-{random_suffix}"
 
+
 def save_profile_picture(base64_image: str, card_id: str) -> str:
     """save base64 image to disk and return relative file path"""
     try:
         # decode base64 image
-        image_data = base64.b64decode(base64_image.split(',')[1])  # remove data:image/jpeg;base64, prefix
+        # remove data:image/jpeg;base64, prefix
+        image_data = base64.b64decode(base64_image.split(',')[1])
 
         # create filename
         filename = f"{card_id}.jpg"
@@ -69,46 +81,12 @@ def save_profile_picture(base64_image: str, card_id: str) -> str:
             detail=f"failed to process profile picture: {str(e)}"
         )
 
-def generate_qr_code(card_url: str, card_id: str) -> str:
-    """generate qr code for the card url and return relative file path"""
-    try:
-        # create qr code
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=10,
-            border=4,
-        )
-        qr.add_data(card_url)
-        qr.make(fit=True)
-
-        # create qr code image
-        qr_image = qr.make_image(fill_color="black", back_color="white")
-
-        # save qr code
-        filename = f"{card_id}_qr.png"
-        file_path = f"{UPLOAD_DIR}/{QR_CODE_DIR}/{filename}"
-        qr_image.save(file_path)
-
-        # return relative path from uploads directory for static serving
-        return f"{QR_CODE_DIR}/{filename}"
-    except Exception as e:
-        print(f"failed to generate qr code: {e}")
-        return None
-
-
-# routes/cards.py
-import logging
-
-# add this at the top
-logger = logging.getLogger(__name__)
-
 
 @router.post("/", response_model=CreateCardResponse)
 async def create_business_card(
-        request: Request,
-        card_data: CreateCardRequest,
-        db: Session = Depends(get_db)
+    request: Request,
+    card_data: CreateCardRequest,
+    db: Session = Depends(get_db)
 ):
     logger.info("📨 Card creation request received")
     print("📨 Card creation request received")
@@ -125,10 +103,10 @@ async def create_business_card(
 
         # validate that we have at least some data
         if not any([
-            card_data.firstName.strip() if card_data.firstName else False,
-            card_data.lastName.strip() if card_data.lastName else False,
-            card_data.email,
-            card_data.phone
+                card_data.firstName.strip() if card_data.firstName else False,
+                card_data.lastName.strip() if card_data.lastName else False,
+                card_data.email,
+                card_data.phone
         ]):
             print("❌ Validation failed")
             raise HTTPException(
@@ -175,21 +153,12 @@ async def create_business_card(
         if card_data.profilePicture:
             print("📸 Saving profile picture...")
             try:
-                profile_pic_path = save_profile_picture(card_data.profilePicture, str(new_card.id))
+                profile_pic_path = save_profile_picture(
+                    card_data.profilePicture, str(new_card.id))
                 new_card.profile_picture_path = profile_pic_path
                 print(f"✅ Profile picture saved: {profile_pic_path}")
             except Exception as e:
                 print(f"⚠️ Failed to save profile picture: {e}")
-
-        # Generate QR code
-        print("📱 Generating QR code...")
-        card_url = f"{BASE_URL}/card/{slug}"
-        qr_code_path = generate_qr_code(card_url, str(new_card.id))
-        if qr_code_path:
-            new_card.qr_code_path = qr_code_path
-            print(f"✅ QR code generated: {qr_code_path}")
-        else:
-            print("⚠️ Failed to generate QR code")
 
         print("✅ Success! Returning response...")
         response = CreateCardResponse(
@@ -215,6 +184,7 @@ async def create_business_card(
             detail=f"internal server error: {str(e)}"
         )
 
+
 @router.get("/{slug}", response_model=CardDisplay)
 async def get_business_card(slug: str, db: Session = Depends(get_db)):
     """get a business card by slug"""
@@ -236,7 +206,6 @@ async def get_business_card(slug: str, db: Session = Depends(get_db)):
         profilePicture=f"{BASE_URL}/static/{card.profile_picture_path}" if card.profile_picture_path else None,
         links=[SocialLink(**link) for link in (card.links or [])],
         createdAt=card.created_at,
-        qrCodeUrl=f"{BASE_URL}/static/{card.qr_code_path}" if card.qr_code_path else None
     )
 
     return response

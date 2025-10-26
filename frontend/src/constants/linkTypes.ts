@@ -1,4 +1,4 @@
-import { Linkedin, Instagram, Twitter, Globe, Link } from 'lucide-react';
+import { Linkedin, Instagram, Twitter, Globe, Link, Github } from 'lucide-react';
 import { LinkType } from '../types';
 
 export const LINK_TYPES: LinkType[] = [
@@ -19,6 +19,14 @@ export const LINK_TYPES: LinkType[] = [
         placeholder: 'your-username'
     },
     {
+        value: 'github',
+        label: 'Github',
+        icon: Github,
+        color: 'text-gray-900',
+        urlTemplate: 'https://github.com/{id}',
+        placeholder: 'your-username'
+    },
+    {
         value: 'twitter',
         label: 'Twitter',
         icon: Twitter,
@@ -31,7 +39,6 @@ export const LINK_TYPES: LinkType[] = [
         label: 'Website',
         icon: Globe,
         color: 'text-green-400',
-        urlTemplate: 'https://{id}',
         placeholder: 'example.com'
     },
     {

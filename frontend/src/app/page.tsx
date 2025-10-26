@@ -23,6 +23,25 @@ const QuiKard: React.FC = () => {
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
+  const extractUsernameFromUrl = (url: string, urlTemplate?: string): string => {
+    // If no template, return the URL as-is (for custom links)
+    if (!urlTemplate) {
+      return url;
+    }
+
+    // Extract the username/id from the full URL based on the template
+    // Template format: "https://platform.com/{id}" or "https://platform.com/in/{id}"
+    try {
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split('/').filter(part => part.length > 0);
+      // Get the last part of the path as the username
+      return pathParts[pathParts.length - 1] || url;
+    } catch {
+      // If URL parsing fails, return as-is
+      return url;
+    }
+  };
+
   const handleCreateCard = async (): Promise<void> => {
     setIsCreating(true);
     setError('');
@@ -42,7 +61,7 @@ const QuiKard: React.FC = () => {
         profilePicture: formData.profilePicture || undefined,
         links: links.map(link => ({
           type: link.type,
-          url: link.url,
+          url: extractUsernameFromUrl(link.url, link.urlTemplate),
           label: link.label
         }))
       };

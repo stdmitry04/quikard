@@ -73,7 +73,7 @@ def sanitize_username(username: str, platform: str) -> str:
     # Remove whitespace
     username = username.strip()
 
-    if platform in ['linkedin', 'instagram', 'twitter']:
+    if platform in ['linkedin', 'instagram', 'twitter', 'github']:
         # Social media usernames: alphanumeric, underscore, hyphen, period
         # Remove @ if present
         username = username.lstrip('@')
@@ -100,7 +100,8 @@ def build_full_url(username: str, platform: str) -> str:
         'linkedin': 'https://linkedin.com/in/{id}',
         'instagram': 'https://instagram.com/{id}',
         'twitter': 'https://twitter.com/{id}',
-        'website': 'https://{id}',
+        'github': 'https://github.com/{id}',
+        # 'website': 'https://{id}',
     }
 
     template = url_templates.get(platform)

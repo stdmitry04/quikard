@@ -18,7 +18,7 @@ class SocialLink(BaseModel):
         platform = values.get('type', '')
 
         # For social media platforms, ensure no full URLs are passed
-        if platform in ['linkedin', 'instagram', 'twitter']:
+        if platform in ['linkedin', 'instagram', 'twitter', 'github']:
             # Check if it looks like a URL (has protocol or multiple slashes)
             if v.startswith(('http://', 'https://', 'www.')) or '//' in v:
                 raise ValueError(f'For {platform}, please provide only your username, not a full URL')
