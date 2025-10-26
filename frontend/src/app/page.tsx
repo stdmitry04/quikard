@@ -50,8 +50,8 @@ const QuiKard: React.FC = () => {
       // call the fastapi backend to create the card
       const response = await cardApiService.createCard(cardData);
 
-      // redirect to the newly created card page
-      router.push(`/card/${response.slug}`);
+      // redirect to the success page where user can download Apple Wallet pass and copy link
+      router.push(`/card/success?slug=${response.slug}`);
 
     } catch (error) {
       console.error('error creating business card:', error);

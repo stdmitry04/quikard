@@ -7,6 +7,7 @@ import { cardApiService } from '@/api/cardService';
 import { CardData } from '@/types';
 import { LINK_TYPES } from '@/constants/linkTypes';
 import { Link } from 'lucide-react'; // fallback icon
+import { downloadVCard } from '@/utils/vcard';
 
 
 const CardDisplayPage: React.FC = () => {
@@ -64,28 +65,7 @@ const CardDisplayPage: React.FC = () => {
 
     const handleDownloadVCard = (): void => {
         if (!cardData) return;
-
-        // create vcard content
-        const vCardContent = [
-            'BEGIN:VCARD',
-            'VERSION:3.0',
-            `FN:${cardData.firstName} ${cardData.lastName}`,
-            `N:${cardData.lastName};${cardData.firstName};;;`,
-            cardData.email ? `EMAIL:${cardData.email}` : '',
-            cardData.phone ? `TEL:${cardData.phone}` : '',
-            'END:VCARD'
-        ].filter(Boolean).join('\n');
-
-        // download the vcard file
-        const blob = new Blob([vCardContent], { type: 'text/vcard' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${cardData.firstName}_${cardData.lastName}_contact.vcf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+        downloadVCard(cardData);
     };
 
     if (loading) {

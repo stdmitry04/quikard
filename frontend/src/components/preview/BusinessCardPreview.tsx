@@ -2,7 +2,8 @@ import React from 'react';
 import { BusinessCardPreviewProps } from '@/types';
 import { ContactInfo } from './ContactInfo';
 import { SocialLinks } from './SocialLinks';
-import { QRCodePlaceholder } from './QRCodePlaceholder';
+import { Download } from 'lucide-react';
+import { downloadVCard } from '@/utils/vcard';
 
 export const BusinessCardPreview: React.FC<BusinessCardPreviewProps> = ({
                                                                             formData,
@@ -14,6 +15,28 @@ export const BusinessCardPreview: React.FC<BusinessCardPreviewProps> = ({
 
     const displayPhone = formData.phone || '+1 (555) 123-4567';
     const displayEmail = formData.email || 'john.doe@example.com';
+
+    const handleDownloadPreview = (): void => {
+        // Create a CardData-like object from the preview data
+        const previewCardData = {
+            firstName: formData.firstName || 'John',
+            lastName: formData.lastName || 'Doe',
+            email: formData.email || null,
+            phone: formData.phone || null,
+            profilePicture: formData.profilePicture,
+            links: links.map(link => ({
+                type: link.type,
+                url: link.url,
+                label: link.label
+            })),
+            createdAt: new Date().toISOString(),
+            qrCodeUrl: null
+        };
+
+        downloadVCard(previewCardData);
+    };
+
+    const isFormFilled = formData.firstName || formData.lastName || formData.email || formData.phone;
 
     return (
         <div className="backdrop-blur-xl bg-black/20 rounded-3xl p-10 border border-white/5 shadow-2xl relative overflow-hidden">
@@ -63,7 +86,26 @@ export const BusinessCardPreview: React.FC<BusinessCardPreviewProps> = ({
                 </div>
             </div>
 
-            <QRCodePlaceholder />
+            {/* Download Contact Button */}
+            <div className="mt-8 text-center relative z-10">
+                <p className="text-sm text-gray-400 mb-4 font-light">
+                    Preview your contact information
+                </p>
+                <button
+                    onClick={handleDownloadPreview}
+                    disabled={!isFormFilled}
+                    className="flex items-center space-x-3 mx-auto px-6 py-3 backdrop-blur-sm bg-gradient-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/30 hover:to-purple-500/30 text-blue-300 hover:text-blue-200 rounded-2xl transition-all duration-300 border border-blue-500/30 hover:border-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-blue-500/20 disabled:hover:to-purple-500/20 disabled:hover:border-blue-500/30"
+                    title={!isFormFilled ? 'Fill in some information to download' : 'Download contact information'}
+                >
+                    <Download className="w-5 h-5" />
+                    <span className="font-medium">Download Contact</span>
+                </button>
+                {!isFormFilled && (
+                    <p className="text-xs text-gray-500 mt-2">
+                        Fill in at least one field to enable download
+                    </p>
+                )}
+            </div>
         </div>
     );
 };
