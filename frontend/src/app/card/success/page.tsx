@@ -58,7 +58,7 @@ const CardSuccessPage: React.FC = () => {
         try {
             setPassLoading(true);
 
-            // Create the digital pass via backend
+            // Create the digital pass via backend.
             const response = await cardApiService.createPass(slug);
             setPassData(response);
 

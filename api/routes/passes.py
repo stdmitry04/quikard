@@ -18,7 +18,7 @@ BASE_URL = os.getenv("BASE_URL", "http://localhost:3000")
 router = APIRouter(prefix="/api/v1/passes", tags=["passes"])
 
 
-def create_badge_pass(card_id: int, card_slug: str, card_url: str, user_name: str) -> dict:
+def create_badge_pass(card_id: str, card_slug: str, card_url: str, user_name: str) -> dict:
 	"""
 	Create or update a digital pass via Badge API
 
@@ -34,7 +34,7 @@ def create_badge_pass(card_id: int, card_slug: str, card_url: str, user_name: st
 	payload = {
 		"passTemplateId": BADGE_TEMPLATE_ID,
 		"user": {
-			"id": str(card_id),
+			"id": card_id,
 			"name": user_name
 		},
 		"pass": {
@@ -135,9 +135,12 @@ async def create_digital_pass(
 	user_name = " ".join(name_parts) if name_parts else "Quikard User"
 
 	# Create the digital pass via Badge API
+	print(str(card.id))
+	print(type(card.id))
+	print('XXXXXXXXXXXXXXXXXXXXXX')
 	try:
 		badge_response = create_badge_pass(
-			card_id=card.id,
+			card_id=str(card.id),
 			card_slug=card.slug,
 			card_url=card_url,
 			user_name=user_name
