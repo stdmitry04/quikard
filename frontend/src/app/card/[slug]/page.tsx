@@ -19,6 +19,27 @@ const CardDisplayPage: React.FC = () => {
 
     const slug = params?.slug as string;
 
+    // Helper function to format image source (handles both base64 and file paths)
+    const getImageSrc = (imageData: string | null | undefined): string | undefined => {
+        if (!imageData) return undefined;
+
+        // If already has data URL prefix (base64), return as-is
+        if (imageData.startsWith('data:')) {
+            return imageData;
+        }
+
+        // If it looks like a file path (contains / or file extensions)
+        if (imageData.includes('/') || imageData.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+            // Handle both /uploads and /static prefixes
+            return `${baseUrl}/uploads/${imageData}`;
+        }
+
+        // Otherwise, assume it's base64 without prefix
+        return `data:image/jpeg;base64,${imageData}`;
+    };
+
+
     useEffect(() => {
         const fetchCard = async () => {
             if (!slug) return;
@@ -26,6 +47,15 @@ const CardDisplayPage: React.FC = () => {
             try {
                 setLoading(true);
                 const data = await cardApiService.getCard(slug);
+
+                // Debug logging
+                if (data.profilePicture) {
+                    console.log('Profile picture received:', data.profilePicture.substring(0, 50) + '...');
+                    console.log('Is data URL:', data.profilePicture.startsWith('data:'));
+                    console.log('Is file path:', data.profilePicture.includes('/') || data.profilePicture.includes('.'));
+                    console.log('Processed URL:', getImageSrc(data.profilePicture)?.substring(0, 100));
+                }
+
                 setCardData(data);
             } catch (error) {
                 console.error('error fetching card:', error);
@@ -149,7 +179,7 @@ const CardDisplayPage: React.FC = () => {
                         <div className="mb-8">
                             {cardData.profilePicture ? (
                                 <img
-                                    src={cardData.profilePicture}
+                                    src={getImageSrc(cardData.profilePicture)}
                                     alt={`profile picture of ${displayName}`}
                                     className="w-36 h-36 rounded-full mx-auto object-cover border border-white/20 shadow-2xl"
                                 />
@@ -208,11 +238,11 @@ const CardDisplayPage: React.FC = () => {
 
                                         return (
                                             <a
-                                            key={`${link.type}-${index}`} // type + index as unique key
-                                            href={displayUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center space-x-2 backdrop-blur-sm bg-black/30 rounded-2xl px-4 py-3 border border-white/10 shadow-lg hover:border-white/20 transition-all duration-300 hover:scale-105 group"
+                                                key={`${link.type}-${index}`} // type + index as unique key
+                                                href={displayUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center space-x-2 backdrop-blur-sm bg-black/30 rounded-2xl px-4 py-3 border border-white/10 shadow-lg hover:border-white/20 transition-all duration-300 hover:scale-105 group"
                                             >
                                                 <linkTypeData.icon className={`w-5 h-5 ${linkTypeData.color} group-hover:scale-110 transition-transform`} />
                                                 <span className="text-sm text-gray-200 font-medium group-hover:text-white">

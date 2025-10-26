@@ -44,7 +44,18 @@ app.include_router(cards_router)
 app.include_router(passes_router)
 
 # serve static files (profile pictures, qr codes)
-app.mount("/static", StaticFiles(directory="uploads"), name="static")
+# Mount at both /static and /uploads for compatibility
+if os.path.exists("uploads"):
+    app.mount("/static", StaticFiles(directory="uploads"), name="static")
+    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+    print("✅ Static files mounted at /static and /uploads")
+else:
+    print("⚠️  Warning: uploads directory not found - creating it...")
+    os.makedirs("uploads/profile_pics", exist_ok=True)
+    os.makedirs("uploads/qr_codes", exist_ok=True)
+    app.mount("/static", StaticFiles(directory="uploads"), name="static")
+    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 
 
 
