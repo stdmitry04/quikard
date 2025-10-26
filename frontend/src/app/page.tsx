@@ -113,7 +113,15 @@ const QuiKard: React.FC = () => {
                   {isCreating ? 'Creating Your Card...' : 'Create My Digital Business Card'}
                 </GradientButton>
 
-                {!isFormValid() && (
+                {error && (
+                    <div className="backdrop-blur-md bg-red-500/10 border border-red-500/30 rounded-2xl p-4">
+                      <p className="text-center text-red-400 text-sm">
+                        {error}
+                      </p>
+                    </div>
+                )}
+
+                {!isFormValid() && !error && (
                     <p className="text-center text-gray-400 text-sm">
                       Fill in at least one field to create your business card
                     </p>

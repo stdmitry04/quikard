@@ -7,8 +7,10 @@ export const AddLinkForm: React.FC<AddLinkFormProps> = ({
                                                             onCancel
                                                         }) => {
     const [newLinkType, setNewLinkType] = useState<string>('custom');
-    const [newLinkUrl, setNewLinkUrl] = useState<string>('');
-    const [isUrlValid, setIsUrlValid] = useState<boolean>(true);
+    const [newLinkInput, setNewLinkInput] = useState<string>('');
+    const [isInputValid, setIsInputValid] = useState<boolean>(true);
+
+    const getSelectedLinkType = () => linkTypes.find(type => type.value === newLinkType);
 
     const validateUrl = (url: string): boolean => {
         try {
@@ -19,47 +21,74 @@ export const AddLinkForm: React.FC<AddLinkFormProps> = ({
         }
     };
 
+    const validateUsername = (username: string): boolean => {
+        // Basic validation: no spaces, no special chars except dash, underscore, dot
+        return /^[a-zA-Z0-9._-]+$/.test(username.trim());
+    };
+
+    const buildUrlFromTemplate = (template: string, id: string): string => {
+        return template.replace('{id}', id.trim());
+    };
+
     const handleAdd = (): void => {
-        const trimmedUrl = newLinkUrl.trim();
+        const trimmedInput = newLinkInput.trim();
 
-        if (!trimmedUrl) {
+        if (!trimmedInput) {
             return;
         }
 
-        if (!validateUrl(trimmedUrl)) {
-            setIsUrlValid(false);
-            return;
+        const linkTypeData = getSelectedLinkType();
+        if (!linkTypeData) return;
+
+        let inputValue: string;
+
+        // If this link type has a URL template, validate and send username only
+        if (linkTypeData.urlTemplate) {
+            if (!validateUsername(trimmedInput)) {
+                setIsInputValid(false);
+                return;
+            }
+            // Send only the username - backend will build the full URL
+            inputValue = trimmedInput;
+        } else {
+            // For custom links, validate as full URL
+            if (!validateUrl(trimmedInput)) {
+                setIsInputValid(false);
+                return;
+            }
+            inputValue = trimmedInput;
         }
 
-        const linkTypeData = linkTypes.find(type => type.value === newLinkType);
-        if (linkTypeData) {
-            onAdd({
-                id: Date.now(),
-                type: newLinkType,
-                url: trimmedUrl,
-                ...linkTypeData
-            });
-            setNewLinkUrl('');
-            setIsUrlValid(true);
-            onCancel();
-        }
+        onAdd({
+            id: Date.now(),
+            type: newLinkType,
+            url: inputValue, // Send username for social links, full URL for custom
+            ...linkTypeData
+        });
+        setNewLinkInput('');
+        setIsInputValid(true);
+        onCancel();
     };
 
     const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>): void => {
         setNewLinkType(e.target.value);
+        setNewLinkInput(''); // Clear input when switching types
+        setIsInputValid(true);
     };
 
-    const handleUrlChange = (e: ChangeEvent<HTMLInputElement>): void => {
-        const url = e.target.value;
-        setNewLinkUrl(url);
-        if (!isUrlValid && url.trim()) {
-            setIsUrlValid(validateUrl(url.trim()));
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
+        const value = e.target.value;
+        setNewLinkInput(value);
+
+        // Reset validation error when user starts typing
+        if (!isInputValid && value.trim()) {
+            setIsInputValid(true);
         }
     };
 
     const handleCancel = (): void => {
-        setNewLinkUrl('');
-        setIsUrlValid(true);
+        setNewLinkInput('');
+        setIsInputValid(true);
         onCancel();
     };
 
@@ -75,6 +104,14 @@ export const AddLinkForm: React.FC<AddLinkFormProps> = ({
                         value={newLinkType}
                         onChange={handleSelectChange}
                         className="w-full px-4 py-3 backdrop-blur-sm bg-black/40 border border-white/10 rounded-2xl text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400/30 transition-all duration-300"
+                        style={{
+                            appearance: "none",
+                            backgroundImage:
+                                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E\")",
+                            backgroundRepeat: "no-repeat",
+                            backgroundPosition: "calc(100% - 5px) center", // 👈 move arrow 30px left
+                            backgroundSize: "1rem",
+                        }}
                     >
                         {linkTypes.map(type => (
                             <option key={type.value} value={type.value} className="bg-gray-900">
@@ -86,25 +123,27 @@ export const AddLinkForm: React.FC<AddLinkFormProps> = ({
 
                 <div>
                     <label htmlFor="link-url-input" className="block text-sm font-medium text-gray-300 mb-2">
-                        URL
+                        {getSelectedLinkType()?.urlTemplate ? 'Username / ID' : 'URL'}
                     </label>
                     <input
                         id="link-url-input"
-                        type="url"
-                        value={newLinkUrl}
-                        onChange={handleUrlChange}
-                        placeholder="https://..."
+                        type={getSelectedLinkType()?.urlTemplate ? 'text' : 'url'}
+                        value={newLinkInput}
+                        onChange={handleInputChange}
+                        placeholder={getSelectedLinkType()?.placeholder || 'https://...'}
                         className={`w-full px-4 py-3 backdrop-blur-sm bg-black/40 border rounded-2xl text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-300 ${
-                            isUrlValid
+                            isInputValid
                                 ? 'border-white/10 focus:ring-blue-400/30 focus:border-blue-400/30'
                                 : 'border-red-400/50 focus:ring-red-400/30 focus:border-red-400/50'
                         }`}
-                        aria-invalid={!isUrlValid}
-                        aria-describedby={!isUrlValid ? "url-error" : undefined}
+                        aria-invalid={!isInputValid}
+                        aria-describedby={!isInputValid ? "url-error" : undefined}
                     />
-                    {!isUrlValid && (
+                    {!isInputValid && (
                         <p id="url-error" className="text-red-400 text-sm mt-1">
-                            Please enter a valid URL (e.g., https://example.com)
+                            {getSelectedLinkType()?.urlTemplate
+                                ? 'Please enter a valid username (letters, numbers, dots, dashes, underscores only)'
+                                : 'Please enter a valid URL (e.g., https://example.com)'}
                         </p>
                     )}
                 </div>
@@ -112,7 +151,7 @@ export const AddLinkForm: React.FC<AddLinkFormProps> = ({
                 <div className="flex space-x-3">
                     <button
                         onClick={handleAdd}
-                        disabled={!newLinkUrl.trim()}
+                        disabled={!newLinkInput.trim()}
                         className="flex-1 px-6 py-3 backdrop-blur-sm bg-transparent hover:bg-blue-500/10 rounded-2xl text-blue-400 hover:text-blue-300 font-medium transition-all duration-300 border border-blue-500/30 hover:border-blue-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
                         type="button"
                     >

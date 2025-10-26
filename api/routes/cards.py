@@ -1,5 +1,5 @@
 # routes/cards.py
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 import os
@@ -10,9 +10,10 @@ import re
 import secrets
 from PIL import Image
 
-from database import get_db  # your database session dependency
-from models import BusinessCard
-from schemas import CreateCardRequest, CreateCardResponse, CardDisplay, SocialLink
+from api.database import get_db  # your database session dependency
+from api.models import BusinessCard
+from api.schemas import CreateCardRequest, CreateCardResponse, CardDisplay, SocialLink
+from api.middleware.rate_limit import check_rate_limit, get_client_ip, build_full_url
 
 router = APIRouter(prefix="/api/v1/cards", tags=["cards"])
 
@@ -47,7 +48,7 @@ def generate_slug(first_name: str, last_name: str) -> str:
     return f"{base_slug}-{random_suffix}"
 
 def save_profile_picture(base64_image: str, card_id: str) -> str:
-    """save base64 image to disk and return file path"""
+    """save base64 image to disk and return relative file path"""
     try:
         # decode base64 image
         image_data = base64.b64decode(base64_image.split(',')[1])  # remove data:image/jpeg;base64, prefix
@@ -60,7 +61,8 @@ def save_profile_picture(base64_image: str, card_id: str) -> str:
         with open(file_path, "wb") as f:
             f.write(image_data)
 
-        return file_path
+        # return relative path from uploads directory for static serving
+        return f"{PROFILE_PICS_DIR}/{filename}"
     except Exception as e:
         raise HTTPException(
             status_code=400,
@@ -68,7 +70,7 @@ def save_profile_picture(base64_image: str, card_id: str) -> str:
         )
 
 def generate_qr_code(card_url: str, card_id: str) -> str:
-    """generate qr code for the card url"""
+    """generate qr code for the card url and return relative file path"""
     try:
         # create qr code
         qr = qrcode.QRCode(
@@ -88,7 +90,8 @@ def generate_qr_code(card_url: str, card_id: str) -> str:
         file_path = f"{UPLOAD_DIR}/{QR_CODE_DIR}/{filename}"
         qr_image.save(file_path)
 
-        return file_path
+        # return relative path from uploads directory for static serving
+        return f"{QR_CODE_DIR}/{filename}"
     except Exception as e:
         print(f"failed to generate qr code: {e}")
         return None
@@ -103,13 +106,21 @@ logger = logging.getLogger(__name__)
 
 @router.post("/", response_model=CreateCardResponse)
 async def create_business_card(
+        request: Request,
         card_data: CreateCardRequest,
         db: Session = Depends(get_db)
 ):
     logger.info("📨 Card creation request received")
-    print("📨 Card creation request received")  # this will always show
+    print("📨 Card creation request received")
 
     try:
+        # Get client IP address
+        client_ip = get_client_ip(request)
+        print(f"🌐 Client IP: {client_ip}")
+
+        # Check rate limit (1 submission per 24 hours per IP)
+        check_rate_limit(client_ip, db)
+
         print(f"📝 Data: {card_data.firstName} {card_data.lastName}")
 
         # validate that we have at least some data
@@ -132,6 +143,17 @@ async def create_business_card(
         )
         print(f"Generated slug: {slug}")
 
+        # Build full URLs from usernames
+        processed_links = []
+        for link in card_data.links:
+            full_url = build_full_url(link.url, link.type)
+            processed_links.append({
+                "type": link.type,
+                "url": full_url,
+                "label": link.label
+            })
+            print(f"🔗 Processed link: {link.type} -> {full_url}")
+
         print("💾 Creating database record...")
         new_card = BusinessCard(
             slug=slug,
@@ -139,20 +161,35 @@ async def create_business_card(
             last_name=card_data.lastName,
             email=card_data.email,
             phone=card_data.phone,
-            links=[
-                {
-                    "type": link.type,
-                    "url": str(link.url),
-                    "label": link.label
-                }
-                for link in card_data.links
-            ]
+            ip_address=client_ip,
+            links=processed_links
         )
 
         print("💾 Adding to database...")
         db.add(new_card)
         db.flush()
         print(f"Card ID: {new_card.id}")
+
+        # Save profile picture if provided
+        profile_pic_path = None
+        if card_data.profilePicture:
+            print("📸 Saving profile picture...")
+            try:
+                profile_pic_path = save_profile_picture(card_data.profilePicture, str(new_card.id))
+                new_card.profile_picture_path = profile_pic_path
+                print(f"✅ Profile picture saved: {profile_pic_path}")
+            except Exception as e:
+                print(f"⚠️ Failed to save profile picture: {e}")
+
+        # Generate QR code
+        print("📱 Generating QR code...")
+        card_url = f"{BASE_URL}/card/{slug}"
+        qr_code_path = generate_qr_code(card_url, str(new_card.id))
+        if qr_code_path:
+            new_card.qr_code_path = qr_code_path
+            print(f"✅ QR code generated: {qr_code_path}")
+        else:
+            print("⚠️ Failed to generate QR code")
 
         print("✅ Success! Returning response...")
         response = CreateCardResponse(
@@ -165,6 +202,9 @@ async def create_business_card(
         print("📤 Response sent")
         return response
 
+    except HTTPException:
+        # Re-raise HTTP exceptions (like rate limit errors)
+        raise
     except Exception as e:
         print(f"❌ ERROR: {str(e)}")
         import traceback

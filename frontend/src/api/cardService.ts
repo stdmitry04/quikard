@@ -16,12 +16,9 @@ export interface CreateCardRequest {
 }
 
 export interface CreateCardResponse {
-    success: boolean;
-    cardId: string;
+    cardId: number;
     slug: string;
     shareableUrl: string;
-    qrCodeUrl?: string;
-    message?: string;
 }
 
 export interface ApiError {
@@ -42,12 +39,10 @@ class CardApiService {
     async createCard(cardData: CreateCardRequest): Promise<CreateCardResponse> {
         try {
             // making the actual api call to create the card
-            const response = await fetch(`${this.baseUrl}/api/v1/cards`, {
+            const response = await fetch(`${this.baseUrl}/api/v1/cards/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // add auth headers if needed
-                    // 'Authorization': `Bearer ${getAuthToken()}`,
                 },
                 body: JSON.stringify(cardData),
             });
@@ -55,13 +50,17 @@ class CardApiService {
             // checking if the response is ok
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || `API request failed with status ${response.status}`);
+                // Handle rate limiting errors
+                if (response.status === 429) {
+                    throw new Error(errorData.detail || 'Rate limit exceeded. Please try again later.');
+                }
+                throw new Error(errorData.detail || errorData.message || `API request failed with status ${response.status}`);
             }
 
             const result: CreateCardResponse = await response.json();
 
             // validating the response structure
-            if (!result.success || !result.cardId || !result.slug) {
+            if (!result.cardId || !result.slug) {
                 throw new Error('Invalid response format from server');
             }
 

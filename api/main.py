@@ -19,6 +19,11 @@ app = FastAPI(
     version="1.0.0"
 )
 
+BADGE_API_URL = "https://api.trybadge.com/v0/rpc/userPassUpsert"
+BADGE_API_KEY = os.getenv("BADGE_API_KEY")
+BADGE_TEMPLATE_ID = os.getenv("BADGE_TEMPLATE_ID")
+BASE_URL = os.getenv("BASE_URL", "http://localhost:3000")
+
 # cors middleware for frontend communication
 app.add_middleware(
     CORSMiddleware,
@@ -37,6 +42,8 @@ app.mount("/static", StaticFiles(directory="uploads"), name="static")
 
 # include routers
 app.include_router(cards_router)
+
+
 
 @app.on_event("startup")
 async def startup_event():

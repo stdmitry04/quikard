@@ -14,7 +14,7 @@ export const QRCodePlaceholder: React.FC<QRCodePlaceholderProps> = ({
                 Scannable QR code for instant access
             </p>
             <div
-                className="w-36 h-36 mx-auto backdrop-blur-sm bg-black/30 rounded-3xl border border-dashed border-white/20 flex items-center justify-center shadow-lg"
+                className="p-3 w-36 h-36 mx-auto backdrop-blur-sm bg-black/30 rounded-3xl border border-dashed border-white/20 flex items-center justify-center shadow-lg"
                 role="img"
                 aria-label="QR code placeholder - will be generated with actual business card data"
             >

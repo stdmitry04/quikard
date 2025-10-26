@@ -30,6 +30,8 @@ export interface LinkType {
     label: string;
     icon: LucideIcon;
     color: string;
+    urlTemplate?: string; // e.g., "https://instagram.com/{id}" - if present, user enters ID instead of full URL
+    placeholder?: string; // e.g., "your-username"
 }
 
 export interface SocialLink extends LinkType {
