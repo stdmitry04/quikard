@@ -158,6 +158,32 @@ class CardApiService {
             throw new Error(error instanceof Error ? error.message : 'failed to get pass download');
         }
     }
+
+    async downloadAppleWalletPass(slug: string): Promise<void> {
+        try {
+            const response = await fetch(`${this.baseUrl}/api/v1/passes/${slug}/apple-wallet-pass`);
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `failed to download Apple Wallet pass: ${response.status}`);
+            }
+
+            // Get the binary data
+            const blob = await response.blob();
+
+            // Create a download link and trigger it
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `quikard-${slug}.pkpass`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            throw new Error(error instanceof Error ? error.message : 'failed to download Apple Wallet pass');
+        }
+    }
 }
 
 // exporting a singleton instance

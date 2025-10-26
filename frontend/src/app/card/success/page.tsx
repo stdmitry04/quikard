@@ -57,23 +57,22 @@ const CardSuccessPage: React.FC = () => {
 
         try {
             setPassLoading(true);
+            setError('');
 
-            // Create the digital pass via backend.
+            // First, create the digital pass in Badge API (ensures it exists)
+            console.log('📱 Creating pass in Badge API...');
             const response = await cardApiService.createPass(slug);
             setPassData(response);
-            console.log(response);
-            // If we have an Apple Wallet URL, open it
-            if (response.downloadUrl) {
-                window.open(response.downloadUrl, '_blank');
-            }
-            else if (response.appleWalletUrl) {
-                window.open(response.appleWalletUrl, '_blank');
-            } else {
-                throw new Error('Pass download URL not available');
-            }
+            console.log('✅ Pass created:', response);
+
+            // Then, download the .pkpass binary file
+            console.log('📥 Downloading .pkpass file...');
+            await cardApiService.downloadAppleWalletPass(slug);
+            console.log('✅ Download initiated!');
+
         } catch (error) {
-            console.error('Error creating pass:', error);
-            setError(error instanceof Error ? error.message : 'Failed to create Apple Wallet pass');
+            console.error('❌ Error downloading Apple Wallet pass:', error);
+            setError(error instanceof Error ? error.message : 'Failed to download Apple Wallet pass');
         } finally {
             setPassLoading(false);
         }

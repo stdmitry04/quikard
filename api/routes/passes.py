@@ -1,5 +1,6 @@
 # routes/passes.py
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 import requests
 import os
@@ -260,6 +261,72 @@ async def get_pass_download(slug: str, db: Session = Depends(get_db)):
 		"googlePayUrl": f"https://api.trybadge.com/passes/google/{pass_id}",
 		"cardUrl": f"{BASE_URL}/card/{card.slug}"
 	}
+
+
+@router.get("/{slug}/apple-wallet-pass")
+async def download_apple_wallet_pass(slug: str, db: Session = Depends(get_db)):
+	"""
+	Download the actual .pkpass file for Apple Wallet
+
+	Args:
+		slug: The unique slug of the business card
+
+	Returns:
+		Binary .pkpass file that can be opened in Apple Wallet
+	"""
+	# Find the business card
+	card = db.query(BusinessCard).filter(BusinessCard.slug == slug).first()
+
+	if not card:
+		raise HTTPException(
+			status_code=404,
+			detail="Business card not found"
+		)
+
+	# Construct pass ID
+	pass_id = f"quikard-{card.slug}"
+
+	# Call Badge API to get the .pkpass binary
+	url = f"https://api.trybadge.com/v0/passTemplates/{BADGE_TEMPLATE_ID}/passes/{pass_id}/appleWalletPkpass"
+
+	headers = {
+		"Accept": "application/vnd.apple.pkpass",
+		"Authorization": f"Bearer {BADGE_API_KEY}"
+	}
+
+	print(f"📱 Fetching Apple Wallet pass from Badge API...")
+	print(f"   URL: {url}")
+	print(f"   Pass ID: {pass_id}")
+
+	try:
+		response = requests.get(url, headers=headers, timeout=15)
+		response.raise_for_status()
+
+		print(f"✅ Successfully fetched .pkpass file ({len(response.content)} bytes)")
+
+		# Return the binary .pkpass file
+		return Response(
+			content=response.content,
+			media_type="application/vnd.apple.pkpass",
+			headers={
+				"Content-Disposition": f"attachment; filename={pass_id}.pkpass"
+			}
+		)
+
+	except requests.exceptions.HTTPError as e:
+		print(f"❌ Badge API error: {e.response.status_code if e.response else 'unknown'}")
+		if e.response:
+			print(f"   Response: {e.response.text}")
+		raise HTTPException(
+			status_code=e.response.status_code if e.response else 500,
+			detail=f"Failed to fetch Apple Wallet pass from Badge API: {e.response.text if e.response else str(e)}"
+		)
+	except requests.exceptions.RequestException as e:
+		print(f"❌ Request error: {str(e)}")
+		raise HTTPException(
+			status_code=503,
+			detail=f"Failed to connect to Badge API: {str(e)}"
+		)
 
 
 @router.delete("/{slug}")
