@@ -23,11 +23,8 @@ export const AddLinkForm: React.FC<AddLinkFormProps> = ({
 
     const validateUsername = (username: string): boolean => {
         // Basic validation: no spaces, no special chars except dash, underscore, dot
+        // This ensures NO full URLs can be stored (rejects /, :, etc.)
         return /^[a-zA-Z0-9._-]+$/.test(username.trim());
-    };
-
-    const buildUrlFromTemplate = (template: string, id: string): string => {
-        return template.replace('{id}', id.trim());
     };
 
     const handleAdd = (): void => {
@@ -40,31 +37,44 @@ export const AddLinkForm: React.FC<AddLinkFormProps> = ({
         const linkTypeData = getSelectedLinkType();
         if (!linkTypeData) return;
 
-        let displayUrl: string;
+        let urlValue: string;
 
-        // If this link type has a URL template, build the full URL for display
+        // If this link type has a URL template, store just the username
         if (linkTypeData.urlTemplate) {
             if (!validateUsername(trimmedInput)) {
                 setIsInputValid(false);
                 return;
             }
-            // Build the full URL for frontend display
-            displayUrl = buildUrlFromTemplate(linkTypeData.urlTemplate, trimmedInput);
+            // Store just the username/ID, not the full URL
+            urlValue = trimmedInput;
+
+            // Extra safety check: ensure we're not accidentally storing a URL
+            if (urlValue.includes('://') || urlValue.includes('//') || urlValue.includes('/')) {
+                console.error('❌ Attempted to store full URL instead of username:', urlValue);
+                setIsInputValid(false);
+                return;
+            }
         } else {
-            // For custom links, validate as full URL
+            // For custom links, validate and store as full URL
             if (!validateUrl(trimmedInput)) {
                 setIsInputValid(false);
                 return;
             }
-            displayUrl = trimmedInput;
+            urlValue = trimmedInput;
         }
 
-        onAdd({
+        const newLink = {
             id: Date.now(),
             type: newLinkType,
-            url: displayUrl, // Full URL for display in preview and links
+            url: urlValue, // Store username for templated links, full URL for custom
             ...linkTypeData
-        });
+        };
+
+        console.log('➕ Adding link:', newLink);
+        console.log('   - Has urlTemplate:', !!linkTypeData.urlTemplate);
+        console.log('   - Storing url value:', urlValue);
+
+        onAdd(newLink);
         setNewLinkInput('');
         setIsInputValid(true);
         onCancel();
@@ -78,6 +88,7 @@ export const AddLinkForm: React.FC<AddLinkFormProps> = ({
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
         const value = e.target.value;
+        console.log('🔤 Input changed:', value);
         setNewLinkInput(value);
 
         // Reset validation error when user starts typing
@@ -142,7 +153,7 @@ export const AddLinkForm: React.FC<AddLinkFormProps> = ({
                     {!isInputValid && (
                         <p id="url-error" className="text-red-400 text-sm mt-1">
                             {getSelectedLinkType()?.urlTemplate
-                                ? 'Please enter a valid username (letters, numbers, dots, dashes, underscores only)'
+                                ? 'Please enter only your username (not the full URL). Only letters, numbers, dots, dashes, and underscores are allowed.'
                                 : 'Please enter a valid URL (e.g., https://example.com)'}
                         </p>
                     )}

@@ -4,6 +4,7 @@ from typing import List, Optional
 from datetime import datetime
 import re
 
+
 class SocialLink(BaseModel):
     type: str
     url: str  # Now accepts username/identifier instead of full URL
@@ -19,16 +20,21 @@ class SocialLink(BaseModel):
 
         # For social media platforms, ensure no full URLs are passed
         if platform in ['linkedin', 'instagram', 'twitter', 'github']:
+            print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+            print(v)
+            print(values)
             # Check if it looks like a URL (has protocol or multiple slashes)
             if v.startswith(('http://', 'https://', 'www.')) or '//' in v:
-                raise ValueError(f'For {platform}, please provide only your username, not a full URL')
+                raise ValueError(
+                    f'For {platform}, please provide only your username, not a full URL')
 
             # Remove @ if present
             v = v.lstrip('@')
 
             # Validate format: alphanumeric, underscore, hyphen, period only
             if not re.match(r'^[a-zA-Z0-9_\-\.]+$', v):
-                raise ValueError(f'Username can only contain letters, numbers, underscores, hyphens, and periods')
+                raise ValueError(
+                    f'Username can only contain letters, numbers, underscores, hyphens, and periods')
 
         elif platform == 'website':
             # For websites, remove protocol if present
@@ -43,6 +49,7 @@ class SocialLink(BaseModel):
     class Config:
         from_attributes = True
 
+
 class CreateCardRequest(BaseModel):
     firstName: Optional[str] = None
     lastName: Optional[str] = None
@@ -54,6 +61,7 @@ class CreateCardRequest(BaseModel):
     class Config:
         from_attributes = True
 
+
 class CreateCardResponse(BaseModel):
     cardId: int
     slug: str
@@ -61,6 +69,7 @@ class CreateCardResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class CardDisplay(BaseModel):
     firstName: str

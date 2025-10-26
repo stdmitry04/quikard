@@ -34,8 +34,13 @@ export function generateVCard(cardData: CardData): string {
             const linkTypeData = LINK_TYPES.find(lt => lt.value === link.type);
             const label = linkTypeData?.label || link.label || 'Link';
 
+            // Build full URL if template exists, otherwise use URL as-is
+            const fullUrl = linkTypeData?.urlTemplate
+                ? linkTypeData.urlTemplate.replace('{id}', link.url)
+                : link.url;
+
             // Add URL with type label
-            lines.push(`URL;TYPE=${label}:${link.url}`);
+            lines.push(`URL;TYPE=${label}:${fullUrl}`);
         });
     }
 

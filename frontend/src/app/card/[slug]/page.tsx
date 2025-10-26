@@ -201,10 +201,15 @@ const CardDisplayPage: React.FC = () => {
                                             label: link.label || 'Custom'
                                         };
 
+                                        // Build full URL from username and template
+                                        const displayUrl = linkTypeData.urlTemplate
+                                            ? linkTypeData.urlTemplate.replace('{id}', link.url)
+                                            : link.url;
+
                                         return (
                                             <a
                                             key={`${link.type}-${index}`} // type + index as unique key
-                                            href={link.url}
+                                            href={displayUrl}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="flex items-center space-x-2 backdrop-blur-sm bg-black/30 rounded-2xl px-4 py-3 border border-white/10 shadow-lg hover:border-white/20 transition-all duration-300 hover:scale-105 group"
@@ -220,28 +225,19 @@ const CardDisplayPage: React.FC = () => {
                             </div>
                         )}
 
-                        {/* qr code */}
-                        {cardData.qrCodeUrl ? (
-                            <div className="mt-8">
-                                <p className="text-sm text-gray-400 mb-4 font-light">
-                                    scan to save contact
-                                </p>
-                                <img
-                                    src={cardData.qrCodeUrl}
-                                    alt="QR code for contact information"
-                                    className="w-32 h-32 mx-auto rounded-2xl border border-white/10 shadow-lg"
-                                />
-                            </div>
-                        ) : (
-                            <div className="mt-8">
-                                <p className="text-sm text-gray-400 mb-4 font-light">
-                                    scan to save contact
-                                </p>
-                                <div className="w-32 h-32 mx-auto backdrop-blur-sm bg-black/30 rounded-2xl border border-dashed border-white/20 flex items-center justify-center">
-                                    <span className="text-xs text-gray-500">qr code</span>
-                                </div>
-                            </div>
-                        )}
+                        {/* download contact button */}
+                        <div className="mt-8">
+                            <p className="text-sm text-gray-400 mb-4 font-light">
+                                save contact information
+                            </p>
+                            <button
+                                onClick={handleDownloadVCard}
+                                className="flex items-center space-x-3 mx-auto px-6 py-3 backdrop-blur-sm bg-gradient-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/30 hover:to-purple-500/30 text-blue-300 hover:text-blue-200 rounded-2xl transition-all duration-300 border border-blue-500/30 hover:border-purple-400/50"
+                            >
+                                <Download className="w-5 h-5" />
+                                <span className="font-medium">save contact</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

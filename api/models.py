@@ -15,8 +15,8 @@ class BusinessCard(Base):
     email = Column(String(255), nullable=True)
     phone = Column(String(50), nullable=True)
 
-    # file paths
-    profile_picture_path = Column(String(500), nullable=True)
+    # profile picture stored as base64, qr code as file path
+    profile_picture_path = Column(Text, nullable=True)  # Now stores base64 data
     qr_code_path = Column(String(500), nullable=True)
 
     # social links stored as json

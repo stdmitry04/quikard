@@ -12,7 +12,9 @@ export const LinksManager: React.FC<LinksManagerProps> = ({
     const [showLinkInput, setShowLinkInput] = useState<boolean>(false);
 
     const addLink = (newLink: SocialLink): void => {
-        onLinksChange([...links, newLink]);
+        const updatedLinks = [...links, newLink];
+        console.log('📝 Links array updated:', updatedLinks);
+        onLinksChange(updatedLinks);
     };
 
     const removeLink = (id: number): void => {

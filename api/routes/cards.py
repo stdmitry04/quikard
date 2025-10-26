@@ -14,7 +14,7 @@ from PIL import Image
 from database import get_db  # your database session dependency
 from models import BusinessCard
 from schemas import CreateCardRequest, CreateCardResponse, CardDisplay, SocialLink
-from middleware.rate_limit import check_rate_limit, get_client_ip, build_full_url
+from middleware.rate_limit import check_rate_limit, get_client_ip
 
 logger = logging.getLogger(__name__)
 
@@ -58,30 +58,6 @@ def generate_slug(first_name: str, last_name: str) -> str:
     return f"{base_slug}-{random_suffix}"
 
 
-def save_profile_picture(base64_image: str, card_id: str) -> str:
-    """save base64 image to disk and return relative file path"""
-    try:
-        # decode base64 image
-        # remove data:image/jpeg;base64, prefix
-        image_data = base64.b64decode(base64_image.split(',')[1])
-
-        # create filename
-        filename = f"{card_id}.jpg"
-        file_path = f"{UPLOAD_DIR}/{PROFILE_PICS_DIR}/{filename}"
-
-        # save image
-        with open(file_path, "wb") as f:
-            f.write(image_data)
-
-        # return relative path from uploads directory for static serving
-        return f"{PROFILE_PICS_DIR}/{filename}"
-    except Exception as e:
-        raise HTTPException(
-            status_code=400,
-            detail=f"failed to process profile picture: {str(e)}"
-        )
-
-
 @router.post("/", response_model=CreateCardResponse)
 async def create_business_card(
     request: Request,
@@ -121,16 +97,16 @@ async def create_business_card(
         )
         print(f"Generated slug: {slug}")
 
-        # Build full URLs from usernames
+        # Store links as-is (usernames for templated links, full URLs for custom)
+        # Frontend will build full URLs dynamically when displaying
         processed_links = []
         for link in card_data.links:
-            full_url = build_full_url(link.url, link.type)
             processed_links.append({
                 "type": link.type,
-                "url": full_url,
+                "url": link.url,  # Store username/ID directly, not full URL
                 "label": link.label
             })
-            print(f"🔗 Processed link: {link.type} -> {full_url}")
+            print(f"🔗 Storing link: {link.type} -> {link.url}")
 
         print("💾 Creating database record...")
         new_card = BusinessCard(
@@ -148,17 +124,11 @@ async def create_business_card(
         db.flush()
         print(f"Card ID: {new_card.id}")
 
-        # Save profile picture if provided
-        profile_pic_path = None
+        # Store profile picture as base64 directly in database
         if card_data.profilePicture:
-            print("📸 Saving profile picture...")
-            try:
-                profile_pic_path = save_profile_picture(
-                    card_data.profilePicture, str(new_card.id))
-                new_card.profile_picture_path = profile_pic_path
-                print(f"✅ Profile picture saved: {profile_pic_path}")
-            except Exception as e:
-                print(f"⚠️ Failed to save profile picture: {e}")
+            print("📸 Storing profile picture...")
+            new_card.profile_picture_path = card_data.profilePicture
+            print(f"✅ Profile picture stored")
 
         print("✅ Success! Returning response...")
         response = CreateCardResponse(
@@ -203,7 +173,7 @@ async def get_business_card(slug: str, db: Session = Depends(get_db)):
         lastName=card.last_name or "",
         email=card.email,
         phone=card.phone,
-        profilePicture=f"{BASE_URL}/static/{card.profile_picture_path}" if card.profile_picture_path else None,
+        profilePicture=card.profile_picture_path,  # Return base64 directly
         links=[SocialLink(**link) for link in (card.links or [])],
         createdAt=card.created_at,
     )

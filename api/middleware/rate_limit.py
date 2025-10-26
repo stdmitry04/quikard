@@ -29,40 +29,40 @@ def check_rate_limit(ip_address: str, db: Session) -> bool:
     Returns True if allowed, raises HTTPException if blocked
     """
     # Find existing rate limit record
-    rate_limit = db.query(IPRateLimit).filter(
-        IPRateLimit.ip_address == ip_address
-    ).first()
-
-    current_time = datetime.utcnow()
-
-    if rate_limit:
-        # Check if 24 hours have passed since last submission
-        time_since_last = current_time - rate_limit.last_submission
-
-        if time_since_last < timedelta(hours=24):
-            # Calculate remaining time
-            remaining_time = timedelta(hours=24) - time_since_last
-            hours = int(remaining_time.total_seconds() // 3600)
-            minutes = int((remaining_time.total_seconds() % 3600) // 60)
-
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail=f"Rate limit exceeded. You can create a new card in {hours}h {minutes}m"
-            )
-
-        # Update the record
-        rate_limit.last_submission = current_time
-        rate_limit.submission_count += 1
-    else:
-        # Create new rate limit record
-        rate_limit = IPRateLimit(
-            ip_address=ip_address,
-            last_submission=current_time,
-            submission_count=1
-        )
-        db.add(rate_limit)
-
-    db.commit()
+    # rate_limit = db.query(IPRateLimit).filter(
+    #     IPRateLimit.ip_address == ip_address
+    # ).first()
+    #
+    # current_time = datetime.utcnow()
+    #
+    # if rate_limit:
+    #     # Check if 24 hours have passed since last submission
+    #     time_since_last = current_time - rate_limit.last_submission
+    #
+    #     if time_since_last < timedelta(hours=24):
+    #         # Calculate remaining time
+    #         remaining_time = timedelta(hours=24) - time_since_last
+    #         hours = int(remaining_time.total_seconds() // 3600)
+    #         minutes = int((remaining_time.total_seconds() % 3600) // 60)
+    #
+    #         raise HTTPException(
+    #             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+    #             detail=f"Rate limit exceeded. You can create a new card in {hours}h {minutes}m"
+    #         )
+    #
+    #     # Update the record
+    #     rate_limit.last_submission = current_time
+    #     rate_limit.submission_count += 1
+    # else:
+    #     # Create new rate limit record
+    #     rate_limit = IPRateLimit(
+    #         ip_address=ip_address,
+    #         last_submission=current_time,
+    #         submission_count=1
+    #     )
+    #     db.add(rate_limit)
+    #
+    # db.commit()
     return True
 
 def sanitize_username(username: str, platform: str) -> str:
