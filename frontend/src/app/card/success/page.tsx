@@ -61,12 +61,13 @@ const CardSuccessPage: React.FC = () => {
             // Create the digital pass via backend.
             const response = await cardApiService.createPass(slug);
             setPassData(response);
-
+            console.log(response);
             // If we have an Apple Wallet URL, open it
-            if (response.appleWalletUrl) {
-                window.open(response.appleWalletUrl, '_blank');
-            } else if (response.downloadUrl) {
+            if (response.downloadUrl) {
                 window.open(response.downloadUrl, '_blank');
+            }
+            else if (response.appleWalletUrl) {
+                window.open(response.appleWalletUrl, '_blank');
             } else {
                 throw new Error('Pass download URL not available');
             }

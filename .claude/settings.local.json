@@ -7,7 +7,11 @@
       "Bash(findstr:*)",
       "Bash(timeout /t 5)",
       "Bash(netstat:*)",
-      "Bash(docker-compose ps:*)"
+      "Bash(docker-compose ps:*)",
+      "Bash(docker compose restart:*)",
+      "Bash(docker compose:*)",
+      "Bash(if exist __pycache__ rmdir /s /q __pycache__)",
+      "Bash(if exist routes__pycache__ rmdir /s /q routes__pycache__)"
     ],
     "deny": [],
     "ask": []

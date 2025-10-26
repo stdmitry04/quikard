@@ -135,9 +135,6 @@ async def create_digital_pass(
 	user_name = " ".join(name_parts) if name_parts else "Quikard User"
 
 	# Create the digital pass via Badge API
-	print(str(card.id))
-	print(type(card.id))
-	print('XXXXXXXXXXXXXXXXXXXXXX')
 	try:
 		badge_response = create_badge_pass(
 			card_id=str(card.id),
@@ -146,28 +143,46 @@ async def create_digital_pass(
 			user_name=user_name
 		)
 
-		download_url = badge_response.get('downloadUrl', None)
-		pass_id = badge_response.get('id', None)
-		#
-		# # Badge typically returns platform-specific URLs
-		# # Check the actual response structure from your Badge API
-		# apple_wallet_url = pass_data.get("appleWalletUrl") or (
-		# 	f"https://api.trybadge.com/passes/apple/{pass_id}" if download_url else None
-		# )
-		# google_pay_url = pass_data.get("googlePayUrl") or (
-		# 	f"https://api.trybadge.com/passes/google/{pass_id}" if download_url else None
-		# )
+		print(f"📦 Badge API Full Response: {badge_response}")
 
-		return CreatePassResponse(
+		# Extract data from Badge API response
+		pass_data = badge_response.get("pass", {})
+		print(f"📦 Pass Data: {pass_data}")
+
+		pass_id = pass_data.get('id') or f"quikard-{card.slug}"
+		download_url = pass_data.get("downloadUrl")
+
+		print(f"🔑 Pass ID: {pass_id}")
+		print(f"📥 Download URL from Badge: {download_url}")
+
+		# Badge API returns a token-based download URL, use it directly
+		# Also construct platform-specific URLs if needed
+		apple_wallet_url = None
+		google_pay_url = None
+
+		if download_url:
+			print(f"✅ Pass created successfully!")
+			print(f"📱 Will return download URL: {download_url}")
+		else:
+			print(f"⚠️  WARNING: No download URL in Badge API response!")
+
+		response_data = CreatePassResponse(
 			success=True,
 			passId=pass_id,
 			cardUrl=card_url,
-			# appleWalletUrl=apple_wallet_url,
-			# googlePayUrl=google_pay_url,
+			appleWalletUrl=apple_wallet_url,
+			googlePayUrl=google_pay_url,
 			passUrl=download_url,
 			downloadUrl=download_url,
 			message=f"Digital pass created successfully for {user_name}"
 		)
+
+		print(f"📤 Returning response to frontend:")
+		print(f"   passId: {response_data.passId}")
+		print(f"   downloadUrl: {response_data.downloadUrl}")
+		print(f"   passUrl: {response_data.passUrl}")
+
+		return response_data
 
 	except HTTPException:
 		raise
