@@ -28,6 +28,17 @@ export interface ApiError {
     statusCode?: number;
 }
 
+export interface CreatePassResponse {
+    success: boolean;
+    passId: string;
+    cardUrl: string;
+    appleWalletUrl?: string | null;
+    googlePayUrl?: string | null;
+    passUrl?: string | null;
+    downloadUrl?: string | null;
+    message: string;
+}
+
 class CardApiService {
     private baseUrl: string;
 
@@ -110,6 +121,41 @@ class CardApiService {
             return await response.json();
         } catch (error) {
             throw new Error(error instanceof Error ? error.message : 'failed to fetch card');
+        }
+    }
+
+    async createPass(slug: string): Promise<CreatePassResponse> {
+        try {
+            const response = await fetch(`${this.baseUrl}/api/v1/passes/${slug}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `failed to create pass: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw new Error(error instanceof Error ? error.message : 'failed to create digital pass');
+        }
+    }
+
+    async getPassDownload(slug: string): Promise<any> {
+        try {
+            const response = await fetch(`${this.baseUrl}/api/v1/passes/${slug}/download`);
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `failed to get pass download: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw new Error(error instanceof Error ? error.message : 'failed to get pass download');
         }
     }
 }

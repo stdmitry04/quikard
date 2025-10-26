@@ -2,21 +2,44 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Copy, Check, Download, AlertCircle, ExternalLink } from 'lucide-react';
+import { Copy, Check, Download, AlertCircle, ExternalLink, Loader2 } from 'lucide-react';
+import { cardApiService, CreatePassResponse } from '@/api/cardService';
+import { CardData } from '@/types';
 
 const CardSuccessPage: React.FC = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [copied, setCopied] = useState<boolean>(false);
+    const [cardData, setCardData] = useState<CardData | null>(null);
+    const [passData, setPassData] = useState<CreatePassResponse | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [passLoading, setPassLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string>('');
 
     const slug = searchParams?.get('slug');
     const cardUrl = slug ? `${window.location.origin}/card/${slug}` : '';
 
+    // Fetch card data on mount
     useEffect(() => {
-        // Redirect if no slug provided
-        if (!slug) {
-            router.push('/');
-        }
+        const fetchCardData = async () => {
+            if (!slug) {
+                router.push('/');
+                return;
+            }
+
+            try {
+                setLoading(true);
+                const data = await cardApiService.getCard(slug);
+                setCardData(data);
+            } catch (error) {
+                console.error('Error fetching card:', error);
+                setError(error instanceof Error ? error.message : 'Failed to load card data');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCardData();
     }, [slug, router]);
 
     const handleCopyLink = async (): Promise<void> => {
@@ -29,11 +52,30 @@ const CardSuccessPage: React.FC = () => {
         }
     };
 
-    const handleDownloadWalletPass = (): void => {
-        // TODO: Implement Apple Wallet pass download
-        // This will be implemented when backend supports .pkpass generation
-        console.log('Download Apple Wallet pass for slug:', slug);
-        alert('Apple Wallet pass download will be implemented soon!');
+    const handleDownloadWalletPass = async (): Promise<void> => {
+        if (!slug) return;
+
+        try {
+            setPassLoading(true);
+
+            // Create the digital pass via backend
+            const response = await cardApiService.createPass(slug);
+            setPassData(response);
+
+            // If we have an Apple Wallet URL, open it
+            if (response.appleWalletUrl) {
+                window.open(response.appleWalletUrl, '_blank');
+            } else if (response.downloadUrl) {
+                window.open(response.downloadUrl, '_blank');
+            } else {
+                throw new Error('Pass download URL not available');
+            }
+        } catch (error) {
+            console.error('Error creating pass:', error);
+            setError(error instanceof Error ? error.message : 'Failed to create Apple Wallet pass');
+        } finally {
+            setPassLoading(false);
+        }
     };
 
     const handleViewCard = (): void => {
@@ -42,6 +84,17 @@ const CardSuccessPage: React.FC = () => {
 
     if (!slug) {
         return null;
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-black flex items-center justify-center">
+                <div className="text-center">
+                    <Loader2 className="w-12 h-12 animate-spin text-blue-400 mx-auto mb-4" />
+                    <p className="text-gray-300">Loading your card...</p>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -124,19 +177,42 @@ const CardSuccessPage: React.FC = () => {
                         {/* Apple Wallet Button */}
                         <button
                             onClick={handleDownloadWalletPass}
-                            className="w-full flex items-center justify-between px-6 py-4 backdrop-blur-sm bg-black/30 hover:bg-black/40 border border-white/10 hover:border-white/20 rounded-2xl transition-all duration-300 group"
+                            disabled={passLoading}
+                            className="w-full flex items-center justify-between px-6 py-4 backdrop-blur-sm bg-black/30 hover:bg-black/40 border border-white/10 hover:border-white/20 rounded-2xl transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <div className="flex items-center space-x-4">
                                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center border border-white/10">
-                                    <Download className="w-6 h-6 text-white" />
+                                    {passLoading ? (
+                                        <Loader2 className="w-6 h-6 text-white animate-spin" />
+                                    ) : (
+                                        <Download className="w-6 h-6 text-white" />
+                                    )}
                                 </div>
                                 <div className="text-left">
-                                    <p className="text-white font-medium">Add to Apple Wallet</p>
-                                    <p className="text-gray-400 text-sm">Download .pkpass file</p>
+                                    <p className="text-white font-medium">
+                                        {passLoading ? 'Creating Pass...' : 'Add to Apple Wallet'}
+                                    </p>
+                                    <p className="text-gray-400 text-sm">
+                                        {passLoading ? 'Please wait' : 'Download .pkpass file'}
+                                    </p>
                                 </div>
                             </div>
-                            <ExternalLink className="w-5 h-5 text-gray-400 group-hover:text-gray-200 transition-colors" />
+                            {!passLoading && (
+                                <ExternalLink className="w-5 h-5 text-gray-400 group-hover:text-gray-200 transition-colors" />
+                            )}
                         </button>
+
+                        {error && (
+                            <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+                                <p className="text-red-400 text-sm">{error}</p>
+                            </div>
+                        )}
+
+                        {passData && !error && (
+                            <div className="mt-4 p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+                                <p className="text-green-400 text-sm">✓ {passData.message}</p>
+                            </div>
+                        )}
 
                         <p className="text-gray-500 text-xs text-center mt-4">
                             The Apple Wallet pass can only be downloaded from this page

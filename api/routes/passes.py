@@ -5,10 +5,15 @@ import requests
 import os
 from typing import Optional
 
-from api.database import get_db
-from api.models import BusinessCard
+from database import get_db
+from models import BusinessCard
 from schemas_passes import CreatePassRequest, CreatePassResponse
-from api.main import BADGE_API_URL, BADGE_API_KEY, BADGE_TEMPLATE_ID, BASE_URL
+
+# Get configuration from environment variables
+BADGE_API_URL = "https://api.trybadge.com/v0/rpc/userPassUpsert"
+BADGE_API_KEY = os.getenv("BADGE_API_KEY")
+BADGE_TEMPLATE_ID = os.getenv("BADGE_TEMPLATE_ID")
+BASE_URL = os.getenv("BASE_URL", "http://localhost:3000")
 
 router = APIRouter(prefix="/api/v1/passes", tags=["passes"])
 

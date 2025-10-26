@@ -10,10 +10,10 @@ import re
 import secrets
 from PIL import Image
 
-from api.database import get_db  # your database session dependency
-from api.models import BusinessCard
-from api.schemas import CreateCardRequest, CreateCardResponse, CardDisplay, SocialLink
-from api.middleware.rate_limit import check_rate_limit, get_client_ip, build_full_url
+from database import get_db  # your database session dependency
+from models import BusinessCard
+from schemas import CreateCardRequest, CreateCardResponse, CardDisplay, SocialLink
+from middleware.rate_limit import check_rate_limit, get_client_ip, build_full_url
 
 router = APIRouter(prefix="/api/v1/cards", tags=["cards"])
 

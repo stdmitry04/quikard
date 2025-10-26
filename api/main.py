@@ -7,6 +7,7 @@ import logging
 
 from database import create_tables
 from routes.cards import router as cards_router
+from routes.passes import router as passes_router
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -37,11 +38,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# include routers (before mounting static files)
+app.include_router(cards_router)
+app.include_router(passes_router)
+
 # serve static files (profile pictures, qr codes)
 app.mount("/static", StaticFiles(directory="uploads"), name="static")
-
-# include routers
-app.include_router(cards_router)
 
 
 

@@ -2,7 +2,7 @@
 from fastapi import Request, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from api.models import IPRateLimit
+from models import IPRateLimit
 import re
 
 def get_client_ip(request: Request) -> str:
