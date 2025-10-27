@@ -17,7 +17,7 @@ export const GradientButton: React.FC<GlassButtonProps> = ({
                 .glass-button {
                     position: relative;
                     background: transparent;
-                    backdrop-filter: blur(20px) saturate(200%);
+                    -webkit-backdrop-filter: blur(20px) saturate(200%);
                     border: 1px solid rgba(255, 255, 255, 0.18);
                     outline: none;
                     box-shadow:
@@ -32,8 +32,16 @@ export const GradientButton: React.FC<GlassButtonProps> = ({
                             inset 0 0 40px rgba(196, 181, 253, 0.02);
                     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
-                    will-change: transform, backdrop-filter;
-                    transform: translateZ(0);
+                    will-change: transform; /* Remove backdrop-filter from will-change */
+                    transform: translate3d(0, 0, 0); /* Change from translateZ(0) */
+                }
+
+                /* Reduce blur intensity on mobile */
+                @media (max-width: 768px) {
+                    .glass-button {
+                        backdrop-filter: blur(10px) saturate(180%);
+                        -webkit-backdrop-filter: blur(10px) saturate(180%);
+                    }
                 }
 
                 .glass-button::before {
