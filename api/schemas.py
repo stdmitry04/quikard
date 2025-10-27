@@ -20,9 +20,6 @@ class SocialLink(BaseModel):
 
         # For social media platforms, ensure no full URLs are passed
         if platform in ['linkedin', 'instagram', 'twitter', 'github']:
-            print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
-            print(v)
-            print(values)
             # Check if it looks like a URL (has protocol or multiple slashes)
             if v.startswith(('http://', 'https://', 'www.')) or '//' in v:
                 raise ValueError(

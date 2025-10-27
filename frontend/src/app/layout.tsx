@@ -20,6 +20,10 @@ export const metadata: Metadata = {
     maximumScale: 1,
     userScalable: false,
   },
+  icons: {
+    icon: '/Q.png',
+    apple: '/Q.png',
+  },
 };
 
 export default function RootLayout({
@@ -29,6 +33,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta name="theme-color" content="#0f0f15" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <title>QuiKard</title>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
