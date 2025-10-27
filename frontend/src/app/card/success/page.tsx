@@ -141,21 +141,21 @@ const CardSuccessContent: React.FC = () => {
                                 type="text"
                                 value={cardUrl}
                                 readOnly
-                                className="flex-1 px-4 py-3 backdrop-blur-sm bg-black/40 border border-white/10 rounded-2xl text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400/30 font-mono text-sm"
+                                className="flex-1 min-w-0 px-4 py-3 backdrop-blur-sm bg-black/40 border border-white/10 rounded-2xl text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400/30 font-mono text-sm"
                             />
                             <button
                                 onClick={handleCopyLink}
-                                className="flex items-center space-x-2 px-6 py-3 backdrop-blur-sm bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-2xl transition-all duration-300 border border-blue-500/30 hover:border-blue-400/50"
+                                className="flex items-center justify-center space-x-2 px-6 py-3 backdrop-blur-sm bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-2xl transition-all duration-300 border border-blue-500/30 hover:border-blue-400/50 flex-shrink-0 whitespace-nowrap"
                             >
                                 {copied ? (
                                     <>
                                         <Check className="w-4 h-4" />
-                                        <span>Copied!</span>
+                                        <span className="hidden sm:inline">Copied!</span>
                                     </>
                                 ) : (
                                     <>
                                         <Copy className="w-4 h-4" />
-                                        <span>Copy</span>
+                                        <span className="hidden sm:inline">Copy</span>
                                     </>
                                 )}
                             </button>
