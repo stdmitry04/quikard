@@ -50,6 +50,9 @@
         background-color: #0f0f15;
         color: #e5e7eb;
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        /* Force compositing layer for smoother scrolling */
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
     }
 
 
@@ -297,21 +300,26 @@
         overflow-x: hidden;
     }
 
-    /* PERFORMANCE FIX: Disable heavy blur effects that cause white strips during fast scrolling */
-    .blur-3xl {
-        filter: none !important;
-        backdrop-filter: none !important;
-    }
-
-    /* PERFORMANCE FIX: Disable backdrop-filter on mobile - very expensive during scroll */
-    [class*="backdrop-blur"] {
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-    }
-
-    /* Force GPU acceleration for smoother scrolling */
+    /* PERFORMANCE FIX: Force hardware acceleration and prevent repainting issues */
     .min-h-screen {
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
+        will-change: transform;
+        transform: translate3d(0, 0, 0);
+        -webkit-transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+
+    /* Ensure background elements are on their own compositing layer */
+    .absolute {
+        will-change: transform;
+        transform: translate3d(0, 0, 0);
+        -webkit-transform: translate3d(0, 0, 0);
+    }
+
+    /* Optimize scrolling container */
+    #app-scroll {
+        -webkit-overflow-scrolling: touch;
+        will-change: scroll-position;
+        contain: layout style paint;
     }
 }
