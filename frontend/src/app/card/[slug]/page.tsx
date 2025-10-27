@@ -30,7 +30,7 @@ const CardDisplayPage: React.FC = () => {
 
         // If it looks like a file path (contains / or file extensions)
         if (imageData.includes('/') || imageData.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://quikard-api.fly.dev';
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:8000';
             // Handle both /uploads and /static prefixes
             return `${baseUrl}/uploads/${imageData}`;
         }

@@ -52,7 +52,7 @@ class CardApiService {
 
     constructor() {
         // using environment variable or default to localhost for development
-        this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://quikard-api.fly.dev';
+        this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:8000';
     }
 
     async createCard(cardData: CreateCardRequest): Promise<CreateCardResponse> {
