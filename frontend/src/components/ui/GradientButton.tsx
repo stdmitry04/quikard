@@ -31,6 +31,9 @@ export const GradientButton: React.FC<GlassButtonProps> = ({
                             inset 0 0 20px rgba(96, 165, 250, 0.03),
                             inset 0 0 40px rgba(196, 181, 253, 0.02);
                     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+                    will-change: transform, backdrop-filter;
+                    transform: translateZ(0);
                 }
 
                 .glass-button::before {

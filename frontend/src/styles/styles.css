@@ -14,12 +14,15 @@
         -webkit-tap-highlight-color: transparent;
     }
 
-    #app-container {
-        overscroll-behavior: none;
-        -webkit-overflow-scrolling: touch;
+    #app-scroll {
+        height: 100vh;
+        overflow-y: auto;
         overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: none;
         max-width: 100%;
     }
+
 
     /* Ensure all main containers don't overflow */
     main {
@@ -39,27 +42,16 @@
         height: auto;
     }
 
-    body {
+    html, body {
+        height: 100%;
+        width: 100%;
+        overflow-x: hidden;
+        overscroll-behavior: none;
         background-color: #0f0f15;
         color: #e5e7eb;
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        min-height: 100vh;
-        overflow-x: hidden;
-        overscroll-behavior: none;
-        -webkit-overflow-scrolling: touch;
-        position: fixed;
-        width: 100%;
-        height: 100%;
     }
 
-    html {
-        scroll-behavior: smooth;
-        overflow: hidden;
-        overscroll-behavior: none;
-        height: 100%;
-        position: fixed;
-        width: 100%;
-    }
 
 }
 
