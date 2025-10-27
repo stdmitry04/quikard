@@ -1,16 +1,14 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Copy, Check, Download, AlertCircle, ExternalLink, Loader2 } from 'lucide-react';
 import { cardApiService, CreatePassResponse } from '@/api/cardService';
-import { CardData } from '@/types';
 
-const CardSuccessPage: React.FC = () => {
+const CardSuccessContent: React.FC = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [copied, setCopied] = useState<boolean>(false);
-    const [cardData, setCardData] = useState<CardData | null>(null);
     const [passData, setPassData] = useState<CreatePassResponse | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [passLoading, setPassLoading] = useState<boolean>(false);
@@ -19,7 +17,7 @@ const CardSuccessPage: React.FC = () => {
     const slug = searchParams?.get('slug');
     const cardUrl = slug ? `${window.location.origin}/card/${slug}` : '';
 
-    // Fetch card data on mount
+    // Fetch card data on mount to verify it exists
     useEffect(() => {
         const fetchCardData = async () => {
             if (!slug) {
@@ -29,8 +27,7 @@ const CardSuccessPage: React.FC = () => {
 
             try {
                 setLoading(true);
-                const data = await cardApiService.getCard(slug);
-                setCardData(data);
+                await cardApiService.getCard(slug);
             } catch (error) {
                 console.error('Error fetching card:', error);
                 setError(error instanceof Error ? error.message : 'Failed to load card data');
@@ -244,6 +241,21 @@ const CardSuccessPage: React.FC = () => {
                 </div>
             </main>
         </div>
+    );
+};
+
+const CardSuccessPage: React.FC = () => {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-black flex items-center justify-center">
+                <div className="text-center">
+                    <Loader2 className="w-12 h-12 animate-spin text-blue-400 mx-auto mb-4" />
+                    <p className="text-gray-300">Loading...</p>
+                </div>
+            </div>
+        }>
+            <CardSuccessContent />
+        </Suspense>
     );
 };
 

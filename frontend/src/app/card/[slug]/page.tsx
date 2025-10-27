@@ -8,7 +8,7 @@ import { CardData } from '@/types';
 import { LINK_TYPES } from '@/constants/linkTypes';
 import { Link } from 'lucide-react'; // fallback icon
 import { downloadVCard } from '@/utils/vcard';
-
+import Image from 'next/image'
 
 const CardDisplayPage: React.FC = () => {
     const params = useParams();
@@ -30,7 +30,7 @@ const CardDisplayPage: React.FC = () => {
 
         // If it looks like a file path (contains / or file extensions)
         if (imageData.includes('/') || imageData.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://quikard-api.fly.dev';
             // Handle both /uploads and /static prefixes
             return `${baseUrl}/uploads/${imageData}`;
         }
@@ -79,7 +79,7 @@ const CardDisplayPage: React.FC = () => {
                     text: 'check out my digital business card',
                     url: shareUrl,
                 });
-            } catch (error) {
+            } catch {
                 console.log('sharing cancelled or failed');
             }
         } else {
@@ -87,7 +87,7 @@ const CardDisplayPage: React.FC = () => {
             try {
                 await navigator.clipboard.writeText(shareUrl);
                 alert('link copied to clipboard!');
-            } catch (error) {
+            } catch {
                 console.error('failed to copy link');
             }
         }
@@ -178,8 +178,8 @@ const CardDisplayPage: React.FC = () => {
                         {/* profile picture */}
                         <div className="mb-8">
                             {cardData.profilePicture ? (
-                                <img
-                                    src={getImageSrc(cardData.profilePicture)}
+                                <Image
+                                    src={getImageSrc(cardData.profilePicture) || ""}
                                     alt={`profile picture of ${displayName}`}
                                     className="w-36 h-36 rounded-full mx-auto object-cover border border-white/20 shadow-2xl"
                                 />
@@ -228,7 +228,8 @@ const CardDisplayPage: React.FC = () => {
                                         const linkTypeData = LINK_TYPES.find(lt => lt.value === link.type) || {
                                             icon: Link, // fallback icon
                                             color: 'text-gray-400', // fallback color
-                                            label: link.label || 'Custom'
+                                            label: link.label || 'Custom',
+                                            urlTemplate: undefined // For custom links without template
                                         };
 
                                         // Build full URL from username and template

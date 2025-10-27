@@ -1,13 +1,7 @@
 import React from 'react';
 import {QRCodeSVG } from 'qrcode.react';
 
-type QRCodePlaceholderProps = {
-    seed?: string;
-}
-
-export const QRCodePlaceholder: React.FC<QRCodePlaceholderProps> = ({
-                                                                        seed = 'my-seed',
-                                                                    }) => {
+export const QRCodePlaceholder: React.FC = () => {
     return (
         <div className="mt-8 text-center relative z-10">
             <p className="text-sm text-gray-400 mb-4 font-light">

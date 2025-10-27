@@ -1,6 +1,7 @@
 import React from 'react';
 import { Upload } from 'lucide-react';
 import { ProfilePictureUploadProps } from '@/types';
+import Image from 'next/image'
 
 export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
                                                                               profilePicture,
@@ -13,8 +14,8 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
             </label>
             <div className="flex flex-col items-center space-y-4">
                 {profilePicture ? (
-                    <img
-                        src={profilePicture}
+                    <Image
+                        src={profilePicture || ""}
                         alt="Profile preview"
                         className="w-32 h-32 rounded-full object-cover border border-white/20 shadow-2xl"
                     />

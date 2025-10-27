@@ -1,4 +1,6 @@
 // api/cardService.ts
+import { CardData } from '@/types';
+
 export interface CreateCardRequest {
     firstName: string;
     lastName: string;
@@ -39,12 +41,18 @@ export interface CreatePassResponse {
     message: string;
 }
 
+export interface PassDownloadResponse {
+    success: boolean;
+    downloadUrl?: string | null;
+    message?: string;
+}
+
 class CardApiService {
     private baseUrl: string;
 
     constructor() {
         // using environment variable or default to localhost for development
-        this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://quikard-api.fly.dev';
     }
 
     async createCard(cardData: CreateCardRequest): Promise<CreateCardResponse> {
@@ -107,7 +115,7 @@ class CardApiService {
         }
     }
 
-    async getCard(slug: string): Promise<any> {
+    async getCard(slug: string): Promise<CardData> {
         try {
             const response = await fetch(`${this.baseUrl}/api/v1/cards/${slug}`);
 
@@ -144,7 +152,7 @@ class CardApiService {
         }
     }
 
-    async getPassDownload(slug: string): Promise<any> {
+    async getPassDownload(slug: string): Promise<PassDownloadResponse> {
         try {
             const response = await fetch(`${this.baseUrl}/api/v1/passes/${slug}/download`);
 

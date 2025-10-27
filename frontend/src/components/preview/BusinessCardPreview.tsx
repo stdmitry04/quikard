@@ -4,6 +4,7 @@ import { ContactInfo } from './ContactInfo';
 import { SocialLinks } from './SocialLinks';
 import { Download } from 'lucide-react';
 import { downloadVCard } from '@/utils/vcard';
+import Image from 'next/image'
 
 export const BusinessCardPreview: React.FC<BusinessCardPreviewProps> = ({
                                                                             formData,
@@ -56,8 +57,8 @@ export const BusinessCardPreview: React.FC<BusinessCardPreviewProps> = ({
                     {/* profile picture */}
                     <div className="mb-8">
                         {formData.profilePicture ? (
-                            <img
-                                src={formData.profilePicture}
+                            <Image
+                                src={formData.profilePicture || ""}
                                 alt={`Profile picture of ${displayName}`}
                                 className="w-28 h-28 rounded-full mx-auto object-cover border border-white/20 shadow-2xl"
                             />
