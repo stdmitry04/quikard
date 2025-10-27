@@ -14,6 +14,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "QuiKard",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({
@@ -26,7 +32,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <div id="app-container" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          overflow: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'none',
+        }}>
+          {children}
+        </div>
       </body>
     </html>
   );

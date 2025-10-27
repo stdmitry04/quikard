@@ -1,6 +1,27 @@
 version: '3.8'
 
 services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: quikard-db
+    environment:
+      POSTGRES_USER: quikard
+      POSTGRES_PASSWORD: quikard_dev_password
+      POSTGRES_DB: quikard
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - quikard-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quikard"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   api:
     build:
       context: ./api
@@ -11,11 +32,15 @@ services:
     volumes:
       - ./api:/app
       - ./api/uploads:/app/uploads
-      - ./api/quikard.db:/app/quikard.db
     env_file:
       - ./api/.env
     environment:
+      - ENV=development
       - BASE_URL=http://localhost:3000
+      - DATABASE_URL=postgresql://quikard:quikard_dev_password@db:5432/quikard
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - quikard-network
     restart: unless-stopped
@@ -44,3 +69,6 @@ services:
 networks:
   quikard-network:
     driver: bridge
+
+volumes:
+  postgres-data:

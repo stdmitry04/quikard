@@ -9,7 +9,10 @@ from database import create_tables
 from routes.cards import router as cards_router
 from routes.passes import router as passes_router
 
-logging.basicConfig(level=logging.DEBUG)
+# Configure logging based on environment
+ENV = os.getenv("ENV", "development")
+LOG_LEVEL = logging.DEBUG if ENV == "development" else logging.INFO
+logging.basicConfig(level=LOG_LEVEL)
 
 # create uploads directory
 os.makedirs("uploads", exist_ok=True)
@@ -23,17 +26,29 @@ app = FastAPI(
 BADGE_API_URL = "https://api.trybadge.com/v0/rpc/userPassUpsert"
 BADGE_API_KEY = os.getenv("BADGE_API_KEY")
 BADGE_TEMPLATE_ID = os.getenv("BADGE_TEMPLATE_ID")
-BASE_URL = os.getenv("BASE_URL", "http://localhost:3000")
+
+# Configure URLs based on environment
+if ENV == "production":
+    # Production: use Fly.io URLs or custom domains from env vars
+    BASE_URL = os.getenv("BASE_URL", "https://quikard.vercel.app")
+    DEFAULT_ALLOWED_ORIGINS = "https://quikard.vercel.app"
+else:
+    # Development: use localhost
+    BASE_URL = os.getenv("BASE_URL", "http://localhost:3000")
+    DEFAULT_ALLOWED_ORIGINS = "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003"
+
+# Configure CORS origins
+ALLOWED_ORIGINS_STR = os.getenv("ALLOWED_ORIGINS", DEFAULT_ALLOWED_ORIGINS)
+ALLOWED_ORIGINS = [origin.strip() for origin in ALLOWED_ORIGINS_STR.split(",")]
+
+print(f"🌍 Environment: {ENV}")
+print(f"🔗 Base URL: {BASE_URL}")
+print(f"🌐 CORS enabled for origins: {ALLOWED_ORIGINS}")
 
 # cors middleware for frontend communication
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # next.js dev server
-        "http://localhost:3001",
-        "https://yourapp.com",
-        "*"# your production frontend url
-    ],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
