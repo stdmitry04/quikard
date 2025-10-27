@@ -51,6 +51,7 @@ export const LinksManager: React.FC<LinksManagerProps> = ({
                     onClick={toggleLinkInput}
                     className="flex items-center justify-center space-x-2 w-full text-blue-400 hover:text-blue-300 transition-all duration-300 backdrop-blur-sm bg-transparent rounded-2xl px-6 py-4 border border-blue-500/30 hover:border-blue-400/50 hover:bg-blue-500/5 mt-3"
                     type="button"
+                    style={{ touchAction: 'manipulation' }}
                 >
                     <Plus className="w-5 h-5" aria-hidden="true" />
                     <span className="font-medium">Add Social Link</span>

@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
 import { AddLinkFormProps } from '@/types';
 
 export const AddLinkForm: React.FC<AddLinkFormProps> = ({
@@ -9,6 +9,19 @@ export const AddLinkForm: React.FC<AddLinkFormProps> = ({
     const [newLinkType, setNewLinkType] = useState<string>('custom');
     const [newLinkInput, setNewLinkInput] = useState<string>('');
     const [isInputValid, setIsInputValid] = useState<boolean>(true);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    // Auto-focus the input field when the form appears
+    useEffect(() => {
+        // Small delay to ensure DOM is ready, especially important for mobile
+        const timer = setTimeout(() => {
+            if (inputRef.current) {
+                inputRef.current.focus();
+            }
+        }, 100);
+
+        return () => clearTimeout(timer);
+    }, []);
 
     const getSelectedLinkType = () => linkTypes.find(type => type.value === newLinkType);
 
@@ -84,6 +97,13 @@ export const AddLinkForm: React.FC<AddLinkFormProps> = ({
         setNewLinkType(e.target.value);
         setNewLinkInput(''); // Clear input when switching types
         setIsInputValid(true);
+
+        // Refocus input after dropdown change (especially important on mobile)
+        setTimeout(() => {
+            if (inputRef.current) {
+                inputRef.current.focus();
+            }
+        }, 100);
     };
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
@@ -137,6 +157,7 @@ export const AddLinkForm: React.FC<AddLinkFormProps> = ({
                         {getSelectedLinkType()?.urlTemplate ? 'Username / ID' : 'URL'}
                     </label>
                     <input
+                        ref={inputRef}
                         id="link-url-input"
                         type={getSelectedLinkType()?.urlTemplate ? 'text' : 'url'}
                         value={newLinkInput}

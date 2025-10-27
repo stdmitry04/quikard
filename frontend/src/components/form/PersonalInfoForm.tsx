@@ -6,6 +6,22 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
                                                                       formData,
                                                                       onInputChange
                                                                   }) => {
+    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let value = e.target.value;
+
+        // If the value doesn't start with "+1 ", ensure it does
+        if (!value.startsWith('+1 ')) {
+            // If user is deleting and tries to remove "+1 ", keep it
+            if (value.length < 3) {
+                value = '+1 ';
+            } else if (!value.startsWith('+1')) {
+                value = '+1 ' + value;
+            }
+        }
+
+        onInputChange('phone', value);
+    };
+
     return (
         <div className="space-y-8">
             {/* name fields */}
@@ -28,8 +44,8 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
             <FormInput
                 label="Phone Number"
                 type="tel"
-                value={formData.phone}
-                onChange={(e) => onInputChange('phone', e.target.value)}
+                value={formData.phone || '+1 '}
+                onChange={handlePhoneChange}
                 placeholder="+1 (555) 123-4567"
                 focusColor="green-400"
             />
