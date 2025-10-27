@@ -76,13 +76,6 @@ const QuiKard: React.FC = () => {
 
   return (
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-black text-gray-100 relative">
-        {/* background ambient lighting elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-20 w-96 h-96 bg-gradient-to-br from-blue-600/5 to-purple-700/5 rounded-full blur-3xl" />
-          <div className="absolute top-40 right-20 w-80 h-80 bg-gradient-to-br from-purple-600/5 to-pink-600/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 left-1/3 w-72 h-72 bg-gradient-to-br from-cyan-600/5 to-blue-700/5 rounded-full blur-3xl" />
-        </div>
-
         <Header />
 
         <main className="max-w-6xl mx-auto px-1 py-4 sm:px-6 sm:py-8 lg:py-12 relative">
