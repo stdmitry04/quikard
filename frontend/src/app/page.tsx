@@ -85,8 +85,8 @@ const QuiKard: React.FC = () => {
 
         <Header />
 
-        <main className="max-w-6xl mx-auto px-6 py-16 relative">
-          <div className="grid lg:grid-cols-2 gap-16">
+        <main className="max-w-6xl mx-auto px-1 py-4 sm:px-6 sm:py-8 lg:py-12 relative">
+          <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
 
             {/* form section */}
             <section aria-label="Business card information form">
@@ -111,7 +111,7 @@ const QuiKard: React.FC = () => {
 
                 <GradientButton
                     onClick={handleCreateCard}
-                    className="w-full"
+                    className="max-w-md mx-auto block"
                 >
                   {isCreating ? 'Creating Your Card...' : 'Create My Digital Business Card'}
                 </GradientButton>

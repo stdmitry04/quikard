@@ -14,7 +14,7 @@ from schemas_passes import CreatePassRequest, CreatePassResponse
 BADGE_API_URL = "https://api.trybadge.com/v0/rpc/userPassUpsert"
 BADGE_API_KEY = os.getenv("BADGE_API_KEY")
 BADGE_TEMPLATE_ID = os.getenv("BADGE_TEMPLATE_ID")
-BASE_URL = os.getenv("BASE_URL", "http://localhost:3000")
+BASE_URL = os.getenv("BASE_URL", "https://quikard-frontend.fly.dev")
 
 router = APIRouter(prefix="/api/v1/passes", tags=["passes"])
 

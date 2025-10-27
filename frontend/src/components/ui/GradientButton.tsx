@@ -109,7 +109,7 @@ export const GradientButton: React.FC<GlassButtonProps> = ({
 
             <button
                 onClick={onClick}
-                className={`glass-button text-white font-medium py-4 px-8 rounded-full transition-all duration-500 relative overflow-hidden ${className}`}
+                className={`glass-button text-white font-medium py-4 px-8 lg:px-24 rounded-full transition-all duration-500 relative overflow-hidden ${className}`}
                 type="button"
             >
                 <span className="button-text relative z-10 text-base tracking-wide">{children}</span>
