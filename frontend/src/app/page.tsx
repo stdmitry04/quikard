@@ -109,12 +109,12 @@ const QuiKard: React.FC = () => {
                   />
                 </FormContainer>
 
-                {/*<GradientButton*/}
-                {/*    onClick={handleCreateCard}*/}
-                {/*    className="max-w-md mx-auto block"*/}
-                {/*>*/}
-                {/*  {isCreating ? 'Creating Your Card...' : 'Create My Digital Business Card'}*/}
-                {/*</GradientButton>*/}
+                <GradientButton
+                    onClick={handleCreateCard}
+                    className="max-w-md mx-auto block"
+                >
+                  {isCreating ? 'Creating Your Card...' : 'Create My Digital Business Card'}
+                </GradientButton>
 
                 {error && (
                     <div className="backdrop-blur-md bg-red-500/10 border border-red-500/30 rounded-2xl p-4">
