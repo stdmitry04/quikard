@@ -17,7 +17,7 @@ export const BusinessCardPreview: React.FC<BusinessCardPreviewProps> = ({
     const displayPhone = formData.phone || '+1 (555) 123-4567';
     const displayEmail = formData.email || 'john.doe@example.com';
 
-    const handleDownloadPreview = (): void => {
+    const handleDownloadPreview = async (): Promise<void> => {
         // Create a CardData-like object from the preview data
         const previewCardData = {
             firstName: formData.firstName || 'John',
@@ -34,7 +34,7 @@ export const BusinessCardPreview: React.FC<BusinessCardPreviewProps> = ({
             qrCodeUrl: null
         };
 
-        downloadVCard(previewCardData);
+        await downloadVCard(previewCardData);
     };
 
     const isFormFilled = formData.firstName || formData.lastName || formData.email || formData.phone;
@@ -60,7 +60,10 @@ export const BusinessCardPreview: React.FC<BusinessCardPreviewProps> = ({
                             <Image
                                 src={formData.profilePicture || ""}
                                 alt={`Profile picture of ${displayName}`}
+                                width={112}
+                                height={112}
                                 className="w-28 h-28 rounded-full mx-auto object-cover border border-white/20 shadow-2xl"
+                                unoptimized={formData.profilePicture.startsWith('data:image/')}
                             />
                         ) : (
                             <div

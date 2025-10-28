@@ -93,9 +93,9 @@ const CardDisplayPage: React.FC = () => {
         }
     };
 
-    const handleDownloadVCard = (): void => {
+    const handleDownloadVCard = async (): Promise<void> => {
         if (!cardData) return;
-        downloadVCard(cardData);
+        await downloadVCard(cardData);
     };
 
     if (loading) {
@@ -181,7 +181,10 @@ const CardDisplayPage: React.FC = () => {
                                 <Image
                                     src={getImageSrc(cardData.profilePicture) || ""}
                                     alt={`profile picture of ${displayName}`}
+                                    width={144}
+                                    height={144}
                                     className="w-36 h-36 rounded-full mx-auto object-cover border border-white/20 shadow-2xl"
+                                    unoptimized={cardData.profilePicture.startsWith('data:image/')}
                                 />
                             ) : (
                                 <div className="w-36 h-36 rounded-full mx-auto backdrop-blur-sm bg-black/40 border border-dashed border-white/20 flex items-center justify-center shadow-xl">

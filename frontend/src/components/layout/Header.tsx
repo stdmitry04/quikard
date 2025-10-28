@@ -8,7 +8,7 @@ export const Header: React.FC = () => {
                     QuiKard
                 </h1>
                 <p className="text-gray-400 text-lg">
-                    Create your digital business card within 3 minutes • no signup required
+                    Create your digital business card within <span className="font-bold">1 minute</span> • no signup required
                 </p>
             </div>
         </header>

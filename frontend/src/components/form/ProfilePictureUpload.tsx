@@ -17,7 +17,10 @@ export const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
                     <Image
                         src={profilePicture || ""}
                         alt="Profile preview"
+                        width={128}
+                        height={128}
                         className="w-32 h-32 rounded-full object-cover border border-white/20 shadow-2xl"
+                        unoptimized={profilePicture.startsWith('data:image/')}
                     />
                 ) : (
                     <div className="w-32 h-32 rounded-full backdrop-blur-sm bg-black/40 border border-dashed border-white/20 flex items-center justify-center shadow-xl">
