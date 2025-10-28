@@ -12,23 +12,39 @@
         padding: 0;
         box-sizing: border-box;
         -webkit-tap-highlight-color: transparent;
+        /*outline: 1px solid red !important;*/
     }
 
-    #app-scroll {
-        height: 100vh;
-        overflow-y: auto;
-        overflow-x: hidden;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior: none;
-        max-width: 100%;
-        background-color: #0f0f15; /* Add this line */
+    html {
+        background-color: #0f0f15;
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+
     }
+
+    body {
+        background-color: #0f0f15;
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+    }
+
+    /*#app-scroll {*/
+    /*    height: 100vh;*/
+    /*    overflow-y: auto;*/
+    /*    overflow-x: hidden;*/
+    /*    -webkit-overflow-scrolling: touch;*/
+    /*    overscroll-behavior: none;*/
+    /*    max-width: 100%;*/
+    /*    background-color: #0f0f15; !* Add this line *!*/
+    /*}*/
+
 
 
     /* Ensure all main containers don't overflow */
     main {
         overflow-x: hidden;
         max-width: 100%;
+        ;
     }
 
     /* Fix for background gradient containers */
