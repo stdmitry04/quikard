@@ -1,3 +1,9 @@
+
+
+![1231232222](https://github.com/user-attachments/assets/7161a5e3-ba1b-48e3-a7ae-5660defa7e29)
+![1761759074613](https://github.com/user-attachments/assets/e2312bba-caf6-44a0-aaa3-430f718c6bbf)
+![1761759074612](https://github.com/user-attachments/assets/6c26563b-d50b-4ee4-a3f6-90f8a213cdf9)
+
 # QuiKard
 
 A modern digital business card creation platform with QR code generation and Apple Wallet integration.
