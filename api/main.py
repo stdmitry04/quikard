@@ -30,12 +30,14 @@ BADGE_TEMPLATE_ID = os.getenv("BADGE_TEMPLATE_ID")
 # Configure URLs based on environment
 if ENV == "production":
     # Production: use Fly.io URLs or custom domains from env vars
-    BASE_URL = os.getenv("BASE_URL", "https://quikard.vercel.app")
-    DEFAULT_ALLOWED_ORIGINS = "https://quikard.vercel.app"
+    BASE_URL = os.getenv("BASE_URL", "https://quikard.net")
+    # Allow both root domain and www subdomain
+    DEFAULT_ALLOWED_ORIGINS = "https://quikard.net,https://www.quikard.net"
 else:
     # Development: use localhost
     BASE_URL = os.getenv("BASE_URL", "http://localhost:3000")
     DEFAULT_ALLOWED_ORIGINS = "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003"
+
 
 # Configure CORS origins
 ALLOWED_ORIGINS_STR = os.getenv("ALLOWED_ORIGINS", DEFAULT_ALLOWED_ORIGINS)
