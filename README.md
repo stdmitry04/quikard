@@ -1,5 +1,4 @@
-
-![2222](https://github.com/user-attachments/assets/ae8e8fd9-ff14-4d87-8e02-2a3502f1d9b5)
+<img src="https://github.com/user-attachments/assets/ae8e8fd9-ff14-4d87-8e02-2a3502f1d9b5" width="33%" alt="Screenshot">
 <img src="https://github.com/user-attachments/assets/e2312bba-caf6-44a0-aaa3-430f718c6bbf" width="33%" alt="Screenshot 1">
 <img src="https://github.com/user-attachments/assets/6c26563b-d50b-4ee4-a3f6-90f8a213cdf9" width="33%" alt="Screenshot 2">
 
